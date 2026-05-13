@@ -1,0 +1,12 @@
+client/node_modules
+server/node_modules
+
+client/dist
+
+client/.env
+server/.env
+
+server/uploads
+
+.vscode
+.DS_Store
