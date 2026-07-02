@@ -1,15 +1,16 @@
 import { useContext, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
 const Signup = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const { login } = useContext(AuthContext);
     const [form, setForm] = useState({
         name: "",
         email: "",
-        mobile: "",
+        mobile: location.state?.mobile || "",
         password: ""
     });
     const [loading, setLoading] = useState(false);
@@ -26,7 +27,7 @@ const Signup = () => {
 
         try {
             setLoading(true);
-            const res = await axios.post("http://localhost:5000/api/auth/signup", {
+            const res = await axios.post("/api/auth/signup", {
                 name: form.name.trim(),
                 email: form.email.trim(),
                 mobile: form.mobile.trim(),
@@ -35,7 +36,10 @@ const Signup = () => {
 
             login(res.data.token);
             alert("Signup Successful");
-            navigate("/");
+            navigate(location.state?.from || "/", {
+                state: location.state?.checkoutState,
+                replace: true,
+            });
         } catch (err) {
             console.log(err);
             alert(err.response?.data || "Signup failed");

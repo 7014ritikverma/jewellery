@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { formatPrice } from "../utils/formatPrice";
 
 const BuyNowQuantity = () => {
     const location = useLocation();
@@ -25,7 +26,7 @@ const BuyNowQuantity = () => {
     const total = price * qty;
 
     const updateQty = (value) => {
-        const nextQty = Math.max(1, Math.min(10, Number(value) || 1));
+        const nextQty = Math.max(1, Math.min(product.quantity || 10, Number(value) || 1));
         setQty(nextQty);
     };
 
@@ -52,9 +53,12 @@ const BuyNowQuantity = () => {
 
                     <div className="flex-1">
                         <h3 className="font-semibold text-lg">{product.name}</h3>
-                        <p className="text-green-600 font-bold mt-2">₹{Number(price).toLocaleString("en-IN", {
-                            minimumFractionDigits: 2,
-                        })}</p>
+                        {product.selectedVariants?.length > 0 && (
+                            <p className="mt-1 text-sm text-gray-500">
+                                {product.selectedVariants.map((variant) => `${variant.group}: ${variant.option}`).join(" | ")}
+                            </p>
+                        )}
+                        <p className="text-green-600 font-bold mt-2">₹{formatPrice(price)}</p>
                     </div>
                 </div>
 
@@ -86,9 +90,7 @@ const BuyNowQuantity = () => {
 
                 <div className="flex justify-between text-lg font-semibold mb-6">
                     <span>Total</span>
-                    <span>₹{Number(total).toLocaleString("en-IN", {
-                        minimumFractionDigits: 2,
-                    })}</span>
+                    <span>₹{formatPrice(total)}</span>
                 </div>
 
                 <button

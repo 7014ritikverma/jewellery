@@ -1,6 +1,8 @@
 import { Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import WhatsAppChatbot from "./components/WhatsAppChatbot";
+import BackToTopButton from "./components/BackToTopButton";
 
 import Home from "./pages/Home";
 import Products from "./pages/Products";
@@ -25,25 +27,49 @@ import ScrollToTop from "./components/ScrollToTop";
 <Route path="/order/:id" element={<OrderDetails />} />
 
 import ProtectedRoute from "./components/ProtectedRoute";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
+import Jobs from "./pages/Jobs";
+import Blogs from "./pages/Blogs";
+import BulkInquiry from "./pages/BulkInquiry";
+import BrandStory from "./pages/BrandStory";
+import Collab from "./pages/Collab";
+import TermsConditions from "./pages/TermsConditions";
+import FAQ from "./pages/FAQ";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import ReturnRefund from "./pages/ReturnRefund";
 
 function AppContent() {
   const location = useLocation();
+  const backgroundLocation = location.state?.backgroundLocation;
 
   const isAdminRoute = location.pathname.startsWith("/admin");
+  const isCheckoutRoute = location.pathname === "/checkout";
 
   return (
     <>
       <ScrollToTop />
 
-      {!isAdminRoute && <Navbar />}
+      {!isAdminRoute && !isCheckoutRoute && <Navbar />}
 
 
-      <Routes>
+      <Routes location={backgroundLocation || location}>
         <Route path="/" element={<Home />} />
         <Route path="/shop" element={<Products />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/jobs" element={<Jobs />} />
+        <Route path="/blogs" element={<Blogs />} />
+        <Route path="/bulk-inquiry" element={<BulkInquiry />} />
+        <Route path="/brand-story" element={<BrandStory />} />
+        <Route path="/collab" element={<Collab />} />
+        <Route path="/terms-conditions" element={<TermsConditions />} />
+        <Route path="/faq" element={<FAQ />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/return-refund" element={<ReturnRefund />} />
 
         <Route
           path="/dashboard"
@@ -69,6 +95,7 @@ function AppContent() {
         <Route path="/buy-now" element={<BuyNowQuantity />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/product/:id" element={<ProductDetails />} />
+        <Route path="/products/:id" element={<ProductDetails />} />
 
 
 
@@ -129,7 +156,18 @@ function AppContent() {
         />
       </Routes>
 
-      <Footer />
+      {backgroundLocation && (
+        <Routes>
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/wishlist" element={<Wishlist />} />
+        </Routes>
+      )}
+
+      {!isAdminRoute && !isCheckoutRoute && <Footer />}
+
+      {!isAdminRoute && !isCheckoutRoute && <WhatsAppChatbot />}
+
+      {!isAdminRoute && !isCheckoutRoute && <BackToTopButton />}
 
     </>
   );

@@ -4,54 +4,87 @@ export const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState([]);
+  const [hydrated, setHydrated] = useState(false);
+
+  const getCartKey = (product) => {
+    const variants = Array.isArray(product.selectedVariants)
+      ? product.selectedVariants.map((item) => `${item.group}:${item.option}`).join("|")
+      : "";
+
+    return variants ? `${product._id || product.id}:${variants}` : `${product._id || product.id}`;
+  };
 
   // load from localStorage
   useEffect(() => {
-    const data = JSON.parse(localStorage.getItem("cart")) || [];
-    setCart(data);
+    try {
+      const data = JSON.parse(localStorage.getItem("cart")) || [];
+      setCart(Array.isArray(data) ? data : []);
+    } catch {
+      setCart([]);
+    } finally {
+      setHydrated(true);
+    }
   }, []);
 
   // save to localStorage
   useEffect(() => {
+    if (!hydrated) return;
     localStorage.setItem("cart", JSON.stringify(cart));
-  }, [cart]);
+  }, [cart, hydrated]);
 
   // ADD TO CART
   const addToCart = (product) => {
-    const exist = cart.find((item) => item._id === product._id);
+    if (product.quantity <= 0) {
+      alert("Product is out of stock!");
+      return;
+    }
+
+    const cartKey = getCartKey(product);
+    const exist = cart.find((item) => (item.cartKey || item._id) === cartKey);
 
     if (exist) {
+      if (exist.qty + 1 > product.quantity) {
+        alert("Not enough stock available!");
+        return;
+      }
       setCart(
         cart.map((item) =>
-          item._id === product._id
+          (item.cartKey || item._id) === cartKey
             ? { ...item, qty: item.qty + 1 }
             : item
         )
       );
     } else {
-      setCart([...cart, { ...product, qty: 1 }]);
+      setCart([...cart, { ...product, cartKey, qty: 1 }]);
     }
   };
 
   // REMOVE ONE ITEM
-  const removeItem = (id) => {
-    setCart(cart.filter((item) => item._id !== id));
+  const removeItem = (key) => {
+    setCart(cart.filter((item) => (item.cartKey || item._id) !== key));
   };
 
   // INCREASE QTY
-  const increaseQty = (id) => {
+  const increaseQty = (key) => {
     setCart(
-      cart.map((item) =>
-        item._id === id ? { ...item, qty: item.qty + 1 } : item
-      )
+      cart.map((item) => {
+        if ((item.cartKey || item._id) === key) {
+          if (item.qty + 1 > item.quantity) {
+            alert("Not enough stock available!");
+            return item;
+          }
+          return { ...item, qty: item.qty + 1 };
+        }
+        return item;
+      })
     );
   };
 
   // DECREASE QTY
-  const decreaseQty = (id) => {
+  const decreaseQty = (key) => {
     setCart(
       cart.map((item) =>
-        item._id === id && item.qty > 1
+        (item.cartKey || item._id) === key && item.qty > 1
           ? { ...item, qty: item.qty - 1 }
           : item
       )
@@ -60,9 +93,9 @@ export const CartProvider = ({ children }) => {
 
   // CLEAR CART
   const clearCart = () => {
-  setCart([]);
-  localStorage.removeItem("cart"); // optional but recommended
-};
+    setCart([]);
+    localStorage.setItem("cart", JSON.stringify([]));
+  };
 
   // TOTAL
   const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);

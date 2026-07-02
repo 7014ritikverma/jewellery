@@ -1,10 +1,24 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Parkinsans:wght@300..800&display=swap');
+
 @import "tailwindcss";
 
 
-/* body {
-    font-family: 'Cormorant Garamond', serif;
-} */
+body {
+   font-family: "Parkinsans", sans-serif;
+    font-optical-sizing: auto;
+}
+
+.bodoni-moda {
+    font-family: "Bodoni Moda", serif;
+    font-optical-sizing: auto;
+}
+
+.parkinsans {
+    font-family: "Parkinsans", sans-serif;
+    font-optical-sizing: auto;
+
+}
 
 .dashboard {
     padding: 20px;

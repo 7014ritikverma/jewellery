@@ -91,8 +91,9 @@
 import { useContext } from "react";
 import { WishlistContext } from "../context/WishlistContext";
 import { CartContext } from "../context/CartContext";
-import { FaTrash } from "react-icons/fa";
+import { FiHeart, FiTrash2, FiX } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
+import { formatPrice } from "../utils/formatPrice";
 
 const Wishlist = () => {
 
@@ -104,45 +105,61 @@ const Wishlist = () => {
 
   const navigate = useNavigate();
 
+  const closeWishlist = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+      return;
+    }
+
+    navigate("/");
+  };
+
   return (
 
-    <div className="bg-gray-100 min-h-screen px-3 sm:px-6 py-6 mt-20">
+    <div className="fixed inset-0 z-[70] mt-0 bg-black/45 text-[#3A001F]">
+      <button
+        type="button"
+        aria-label="Close wishlist"
+        className="absolute inset-0 cursor-default"
+        onClick={closeWishlist}
+      />
 
-      <div className="max-w-5xl mx-auto bg-white shadow-xl rounded-2xl overflow-hidden">
+      <aside className="absolute right-0 top-0 flex h-full w-full max-w-md flex-col bg-white shadow-2xl sm:w-[430px]">
 
         {/* HEADER */}
-        <div className="p-4 sm:p-5 border-b font-bold text-xl flex justify-between items-center bg-white">
+        <div className="flex items-center justify-between border-b px-5 py-4 bg-white">
 
-          <h2>
-            My Wishlist
-          </h2>
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#3A001F] text-white">
+              <FiHeart size={18} />
+            </span>
+            <div>
+              <h2 className="text-lg font-bold">My Wishlist</h2>
+              <p className="text-xs text-gray-500">{wishlist.length} item{wishlist.length === 1 ? "" : "s"}</p>
+            </div>
+          </div>
 
-          <span className="text-sm bg-pink-100 text-[#6b0f1a] px-3 py-1 rounded-full">
-            {wishlist.length} Items
-          </span>
+          <button
+            type="button"
+            aria-label="Close wishlist"
+            onClick={closeWishlist}
+            className="flex h-10 w-10 items-center justify-center rounded-full border text-gray-700 hover:bg-gray-50"
+          >
+            <FiX size={20} />
+          </button>
 
         </div>
 
         {/* ITEMS */}
         {wishlist.length > 0 ? (
 
-          <div className="divide-y">
+          <div className="flex-1 overflow-y-auto divide-y">
 
             {wishlist.map((item, i) => (
 
               <div
-                key={i}
-                className="
-                flex
-                flex-col
-                sm:flex-row
-                sm:items-center
-                sm:justify-between
-                gap-4
-                p-4
-                hover:bg-gray-50
-                transition
-                "
+                key={item.wishlistKey || item._id || i}
+                className="flex items-center gap-3 p-4 transition hover:bg-gray-50"
               >
 
                 {/* LEFT */}
@@ -152,47 +169,28 @@ const Wishlist = () => {
                       state: { product: item }
                     })
                   }
-                  className="
-                  flex
-                  gap-4
-                  cursor-pointer
-                  items-center
-                  "
+                  className="flex min-w-0 flex-1 cursor-pointer items-center gap-3"
                 >
 
                   <img
                     src={item.images?.[0]}
                     alt={item.name}
-                    className="
-                    w-24
-                    h-24
-                    sm:w-28
-                    sm:h-28
-                    object-cover
-                    rounded-xl
-                    border
-                    shadow-sm
-                    "
+                    className="h-20 w-20 shrink-0 rounded-xl border object-cover shadow-sm"
                   />
 
-                  <div className="flex flex-col gap-2">
+                  <div className="min-w-0 flex-1">
 
-                    <h3 className="text-sm sm:text-base font-semibold text-gray-800 line-clamp-2">
+                    <h3 className="line-clamp-2 text-sm font-semibold text-[#A56028]">
                       {item.name}
                     </h3>
 
-                    <span className="text-xl font-bold text-[#6b0f1a]">
+                    <span className="mt-1 block text-base font-bold text-[#3A001F]">
 
-                      ₹{Number(item.price).toLocaleString(
-                        "en-IN",
-                        {
-                          minimumFractionDigits: 2,
-                        }
-                      )}
+                      ₹{formatPrice(item.price)}
 
                     </span>
 
-                    <p className="text-sm text-green-600 font-medium">
+                    <p className="mt-1 text-xs font-medium text-green-600">
                       In Stock
                     </p>
 
@@ -202,33 +200,13 @@ const Wishlist = () => {
 
                 {/* RIGHT */}
                 <div
-                  className="
-                  flex
-                  items-center
-                  gap-3
-                  sm:gap-5
-                  w-full
-                  sm:w-auto
-                  "
+                  className="flex shrink-0 items-center gap-2"
                 >
 
                   {/* ADD TO CART */}
                   <button
                     onClick={() => addToCart(item)}
-                    className="
-                    flex-1
-                    sm:flex-none
-                    bg-[#6b0f1a]
-                    hover:bg-[#4d0912]
-                    text-white
-                    px-5
-                    py-3
-                    rounded-xl
-                    text-sm
-                    font-medium
-                    transition
-                    shadow-md
-                    "
+                    className="rounded-lg bg-[#3A001F] px-3 py-2 text-xs font-medium text-white shadow-md transition hover:bg-[#581b3c]"
                   >
                     Add to Cart
                   </button>
@@ -236,17 +214,11 @@ const Wishlist = () => {
                   {/* REMOVE */}
                   <button
                     onClick={() =>
-                      removeFromWishlist(item._id)
+                      removeFromWishlist(item.wishlistKey || item._id)
                     }
-                    className="
-                    text-gray-400
-                    hover:text-red-500
-                    transition
-                    text-lg
-                    p-2
-                    "
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-gray-500 transition hover:bg-red-50 hover:text-red-500"
                   >
-                    <FaTrash />
+                    <FiTrash2 />
                   </button>
 
                 </div>
@@ -259,7 +231,7 @@ const Wishlist = () => {
 
         ) : (
 
-          <div className="flex flex-col items-center justify-center py-20 px-4">
+          <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
 
             <img
               src="https://cdn-icons-png.flaticon.com/512/4555/4555971.png"
@@ -267,7 +239,7 @@ const Wishlist = () => {
               className="w-40 mb-6 opacity-80"
             />
 
-            <h2 className="text-3xl font-bold text-[#6b0f1a] mb-2">
+            <h2 className="text-3xl font-bold text-[#3A001F] mb-2">
               Your Wishlist is Empty
             </h2>
 
@@ -294,7 +266,7 @@ const Wishlist = () => {
 
         )}
 
-      </div>
+      </aside>
 
     </div>
 

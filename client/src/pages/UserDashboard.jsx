@@ -8,7 +8,7 @@ const UserDashboard = () => {
     const token = localStorage.getItem("userToken");
 
     useEffect(() => {
-        axios.get("http://localhost:5000/api/user/profile", {
+        axios.get("/api/user/profile", {
             headers: { Authorization: token },
         })
             .then(res => setUser(res.data))
@@ -18,7 +18,7 @@ const UserDashboard = () => {
     const handleUpdate = async () => {
         try {
             const res = await axios.put(
-                "http://localhost:5000/api/user/profile",
+                "/api/user/profile",
                 user,
                 { headers: { Authorization: token } }
             );
@@ -33,14 +33,14 @@ const UserDashboard = () => {
     };
 
     return (
-        <div className="p-10 mt-20 bg-gray-100 min-h-screen">
+        <div className="p-10 mt-20 bg-gray-100 min-h-screen text-[#3A001F]">
             <div className="max-w-5xl mx-auto space-y-6">
                 <div className="bg-white p-6 rounded-xl shadow">
                     <h2 className="text-xl font-bold mb-4">My Profile</h2>
 
                     {!edit ? (
                         <>
-                            <div className="space-y-3 text-gray-700">
+                            <div className="space-y-3 text-[#3A001F]">
                                 <p><b>Name:</b> {user.name || "-"}</p>
                                 <p><b>Email:</b> {user.email || "-"}</p>
                                 <p><b>Phone:</b> {user.mobile || user.phone || "-"}</p>
@@ -49,7 +49,7 @@ const UserDashboard = () => {
 
                             <button
                                 onClick={() => setEdit(true)}
-                                className="mt-4 bg-[#6b0f1a] text-white px-6 py-2 rounded"
+                                className="mt-4 bg-[#3A001F] text-white px-6 py-2 rounded"
                             >
                                 Edit Profile
                             </button>

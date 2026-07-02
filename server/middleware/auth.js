@@ -1,25 +1,55 @@
 import jwt from "jsonwebtoken";
+import Admin from "../models/Admin.js";
+
+const getToken = (req) => {
+  const header = req.header("Authorization");
+
+  if (!header) return null;
+
+  return header.startsWith("Bearer ") ? header.split(" ")[1] : header;
+};
 
 const auth = (req, res, next) => {
   try {
-    let token = req.header("Authorization");
+    const token = getToken(req);
 
     if (!token) {
       return res.status(401).json("No token");
     }
 
-    // 🔥 handle "Bearer TOKEN" OR "TOKEN"
-    if (token.startsWith("Bearer ")) {
-      token = token.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    if (decoded.role === "admin") {
+      return res.status(403).json("User access required");
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET)
-
-    req.user = { id: decoded.id };
+    req.user = { id: decoded.id, role: decoded.role || "user" };
 
     next();
   } catch (err) {
-    console.log("AUTH ERROR:", err.message); // 🔥 debug
+    res.status(401).json("Invalid token");
+  }
+};
+
+export const adminAuth = async (req, res, next) => {
+  try {
+    const token = getToken(req);
+
+    if (!token) {
+      return res.status(401).json("No token");
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const adminExists = await Admin.exists({ _id: decoded.id });
+
+    if (!adminExists) {
+      return res.status(403).json("Admin access required");
+    }
+
+    req.user = { id: decoded.id, role: "admin" };
+
+    next();
+  } catch (err) {
     res.status(401).json("Invalid token");
   }
 };
