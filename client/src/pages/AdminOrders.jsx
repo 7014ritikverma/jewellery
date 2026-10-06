@@ -15,6 +15,7 @@ const AdminOrders = () => {
   const [setupLoading, setSetupLoading] = useState(false);
   const [selectedCouriers, setSelectedCouriers] = useState({});
   const [returnNotes, setReturnNotes] = useState({});
+  const [shipmentNotes, setShipmentNotes] = useState({});
   const token = localStorage.getItem("adminToken");
 
   const handleAuthError = (err) => {
@@ -113,6 +114,23 @@ const AdminOrders = () => {
     }
   };
 
+  const updateShipmentStatus = async (id, status) => {
+    try {
+      setLoadingAction(`${id}:status`);
+      const res = await axios.put(
+        `/api/orders/${id}/status`,
+        { status, note: shipmentNotes[id] || "" },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setOrders((current) => current.map((order) => order._id === id ? res.data : order));
+    } catch (err) {
+      if (handleAuthError(err)) return;
+      alert(err.response?.data?.message || "Shipment status update failed");
+    } finally {
+      setLoadingAction("");
+    }
+  };
+
   const filteredOrders = orders.filter((order) => {
     const query = search.trim().toLowerCase();
     const matchesSearch = !query
@@ -195,8 +213,8 @@ const AdminOrders = () => {
         )}
       </div>
 
-      <div className="mb-5 grid grid-cols-2 gap-3 md:grid-cols-5">
-        {["Pending", "Processing", "Shipped", "Delivered"].map((status) => (
+      <div className="mb-5 grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-7">
+        {["Pending", "Placed", "Processing", "Shipped", "Out for Delivery", "Delivered"].map((status) => (
           <button
             key={status}
             type="button"
@@ -231,8 +249,10 @@ const AdminOrders = () => {
         >
           <option>All</option>
           <option>Pending</option>
+          <option>Placed</option>
           <option>Processing</option>
           <option>Shipped</option>
+          <option>Out for Delivery</option>
           <option>Delivered</option>
         </select>
         <select
@@ -276,6 +296,44 @@ const AdminOrders = () => {
           <p className="mt-2">
             <b>Status:</b> {order.status}
           </p>
+
+          <div className="mt-3 rounded-lg border border-[#eadfe1] bg-[#fffaf8] p-3">
+            <p className="font-semibold">Manual shipment update</p>
+            <p className="mt-1 text-xs text-gray-600">Use this when you are dispatching the order yourself, without waiting for courier tracking.</p>
+            <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+              <input
+                value={shipmentNotes[order._id] || ""}
+                onChange={(e) => setShipmentNotes((current) => ({ ...current, [order._id]: e.target.value }))}
+                maxLength={300}
+                placeholder="Optional note, e.g. dispatched today"
+                className="min-w-0 flex-1 rounded border px-3 py-2 text-sm"
+              />
+              <button
+                type="button"
+                disabled={loadingAction === `${order._id}:status`}
+                onClick={() => updateShipmentStatus(order._id, "Placed")}
+                className="rounded bg-[#3A001F] px-3 py-2 text-sm text-white disabled:opacity-50"
+              >
+                {loadingAction === `${order._id}:status` ? "Saving..." : "Mark Placed"}
+              </button>
+              <button
+                type="button"
+                disabled={loadingAction === `${order._id}:status`}
+                onClick={() => updateShipmentStatus(order._id, "Out for Delivery")}
+                className="rounded bg-[#A56028] px-3 py-2 text-sm text-white disabled:opacity-50"
+              >
+                {loadingAction === `${order._id}:status` ? "Saving..." : "Out for Delivery"}
+              </button>
+              <button
+                type="button"
+                disabled={loadingAction === `${order._id}:status`}
+                onClick={() => updateShipmentStatus(order._id, "Delivered")}
+                className="rounded bg-green-700 px-3 py-2 text-sm text-white disabled:opacity-50"
+              >
+                {loadingAction === `${order._id}:status` ? "Saving..." : "Mark Delivered"}
+              </button>
+            </div>
+          </div>
 
           <div className="my-4">
             <OrderTracking order={order} compact />

@@ -144,6 +144,22 @@ const ProductVariantEditor = ({
         ));
     };
 
+    const reorderCombinationImage = (comboIndex, imageIndex, direction) => {
+        const combo = comboRows[comboIndex];
+        const images = (combo?.images?.length ? combo.images : [combo?.image].filter(Boolean));
+        const targetIndex = imageIndex + direction;
+
+        if (!combo || targetIndex < 0 || targetIndex >= images.length) return;
+
+        const nextImages = [...images];
+        [nextImages[imageIndex], nextImages[targetIndex]] = [nextImages[targetIndex], nextImages[imageIndex]];
+        updateCombination(comboIndex, {
+            ...combo,
+            image: nextImages[0] || "",
+            images: nextImages,
+        });
+    };
+
     const updateCombinationSelection = (comboIndex, groupName, optionName) => {
         const combo = comboRows[comboIndex] || { ...emptyCombination };
         const selections = Array.isArray(combo.selections) ? combo.selections : [];
@@ -225,15 +241,11 @@ const ProductVariantEditor = ({
                 ]
                 : [
                 {
-                    name: "Pair",
+                    name: "Pair / Set",
                     options: [
                         { label: "Pair 1", image: "" },
                         { label: "Pair 2", image: "" },
                     ],
-                },
-                {
-                    name: "Color",
-                    options: [{ ...emptyOption }],
                 },
             ];
 
@@ -243,10 +255,15 @@ const ProductVariantEditor = ({
     return (
         <div className="space-y-4 rounded-lg border border-[#3A001F] bg-[#fff8f4]/30 p-3 sm:p-4">
             <div>
-                <p className="font-semibold text-[#3A001F]">Product Options</p>
+                <p className="font-semibold text-[#3A001F]">Variants (optional)</p>
                 <p className="text-xs text-gray-600">
-                    Add only when needed. Examples: Sets, Color, Size.
+                    Use this only when the customer can choose a different version of this product, such as Color, Size, or Pair / Set.
                 </p>
+                <ol className="mt-2 list-decimal space-y-1 pl-5 text-xs text-[#A56028]">
+                    <li>Add an option group and its choices (for example: Color → Red, Blue).</li>
+                    <li>Click “Create all variant rows” to make one row for every possible choice.</li>
+                    <li>In each row, add its price, stock, and images only if they are different.</li>
+                </ol>
             </div>
 
             {groups.map((group, groupIndex) => (
@@ -254,7 +271,7 @@ const ProductVariantEditor = ({
                     <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_auto]">
                         <input
                             value={group.name || ""}
-                            placeholder="Option group name, e.g. Color"
+                            placeholder="Choice type, e.g. Color or Size"
                             className="min-w-0 flex-1 rounded-lg border p-2"
                             onChange={(e) => updateGroup(groupIndex, { ...group, name: e.target.value })}
                         />
@@ -272,7 +289,7 @@ const ProductVariantEditor = ({
                             <div key={optionIndex} className="grid grid-cols-1 gap-2 rounded-lg border p-2 lg:grid-cols-[minmax(140px,1fr)_minmax(180px,1.2fr)_auto]">
                                 <input
                                     value={option.label || ""}
-                                    placeholder="Option name, e.g. Blue"
+                                    placeholder="Customer choice, e.g. Blue"
                                     className="rounded-lg border p-2"
                                     onChange={(e) => {
                                         const options = [...(group.options || [])];
@@ -337,7 +354,7 @@ const ProductVariantEditor = ({
                         })}
                         className="rounded-lg bg-[#3A001F] px-3 py-2 text-sm text-white"
                     >
-                        Add Option
+                        Add another choice
                     </button>
                 </div>
             ))}
@@ -347,7 +364,7 @@ const ProductVariantEditor = ({
                 onClick={() => onChange([...groups, { ...emptyGroup }])}
                 className="rounded-lg border border-[#3A001F] px-4 py-2 text-sm font-semibold text-[#3A001F]"
             >
-                Add Variant Group
+                Add choice type (Color / Size)
             </button>
 
             <button
@@ -355,20 +372,21 @@ const ProductVariantEditor = ({
                 onClick={createPairSystem}
                 className="ml-2 rounded-lg bg-[#3A001F] px-4 py-2 text-sm font-semibold text-white"
             >
-                Create Pair System
+                Add Pair / Set choices
             </button>
 
             {groups.length > 0 && onCombinationsChange && (
                 <div className="space-y-3 rounded-lg border bg-white p-3">
                     <div>
-                        <p className="font-semibold text-[#3A001F]">Variant Prices</p>
+                        <p className="font-semibold text-[#3A001F]">Variant details</p>
                         <p className="text-xs text-[#A56028]">
-                            Add exact price and image for selected option combinations.
+                            One card equals one sellable customer choice. Fill price or metal/weight, then stock and images if needed.
                         </p>
                     </div>
 
                     {comboRows.map((combo, comboIndex) => (
                         <div key={comboIndex} className="space-y-3 rounded-lg border p-3">
+                            <p className="text-sm font-semibold text-[#3A001F]">Variant {comboIndex + 1}</p>
                             <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-4">
                                 {groups.map((group) => {
                                     const selectedOption = (combo.selections || [])
@@ -403,7 +421,7 @@ const ProductVariantEditor = ({
                                         });
                                     }}
                                 >
-                                    <option value="">Metal</option>
+                                    <option value="">Metal (optional)</option>
                                     {metalRates.map((item) => (
                                         <option key={item._id || item.metal} value={item.metal}>
                                             {item.metal}
@@ -416,7 +434,7 @@ const ProductVariantEditor = ({
                                     type="number"
                                     min="0"
                                     step="0.01"
-                                    placeholder="Weight (g)"
+                                    placeholder="Weight in grams (optional)"
                                     className="rounded-lg border p-2"
                                     onChange={(e) => updateCombination(comboIndex, { ...combo, weight: e.target.value })}
                                 />
@@ -426,7 +444,7 @@ const ProductVariantEditor = ({
                                     type="number"
                                     min="0"
                                     step="0.01"
-                                    placeholder="Rate per gram"
+                                    placeholder="Rate per gram (auto-filled)"
                                     className="rounded-lg border p-2"
                                     onChange={(e) => updateCombination(comboIndex, { ...combo, rate: e.target.value })}
                                 />
@@ -446,7 +464,7 @@ const ProductVariantEditor = ({
                                     type="number"
                                     min="0"
                                     step="0.01"
-                                    placeholder="Manual price fallback"
+                                    placeholder="Manual price (use if no metal/weight)"
                                     className="rounded-lg border p-2"
                                     onChange={(e) => updateCombination(comboIndex, { ...combo, price: e.target.value })}
                                 />
@@ -455,7 +473,7 @@ const ProductVariantEditor = ({
                                     value={combo.quantity || ""}
                                     type="number"
                                     min="0"
-                                    placeholder="Stock optional"
+                                    placeholder="Stock quantity (optional)"
                                     className="rounded-lg border p-2"
                                     onChange={(e) => updateCombination(comboIndex, { ...combo, quantity: e.target.value })}
                                 />
@@ -469,14 +487,41 @@ const ProductVariantEditor = ({
 
                             <div className="space-y-2">
                                 {(combo.images?.length ? combo.images : [combo.image].filter(Boolean)).length > 0 && (
-                                    <div className="flex flex-wrap gap-2">
+                                    <>
+                                        <p className="text-xs text-gray-600">
+                                            Images stay in the order you select them. The first image is this variant's cover; use arrows to change it.
+                                        </p>
+                                        <div className="flex flex-wrap gap-2">
                                         {(combo.images?.length ? combo.images : [combo.image].filter(Boolean)).map((image, imageIndex) => (
-                                            <div key={`${image}-${imageIndex}`} className="relative">
+                                            <div key={`${image}-${imageIndex}`} className="relative rounded-md border bg-white p-1">
+                                                <span className="absolute left-1 top-1 rounded bg-[#3A001F] px-1 text-[10px] text-white">
+                                                    {imageIndex === 0 ? "Cover" : imageIndex + 1}
+                                                </span>
                                                 <img
                                                     src={image}
                                                     alt="Variant"
                                                     className="h-16 w-16 rounded-md object-cover"
                                                 />
+                                                <div className="mt-1 flex justify-center gap-1">
+                                                    <button
+                                                        type="button"
+                                                        disabled={imageIndex === 0}
+                                                        aria-label={`Move variant image ${imageIndex + 1} earlier`}
+                                                        onClick={() => reorderCombinationImage(comboIndex, imageIndex, -1)}
+                                                        className="rounded border px-1 text-xs disabled:opacity-30"
+                                                    >
+                                                        ←
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        disabled={imageIndex === (combo.images?.length ? combo.images : [combo.image].filter(Boolean)).length - 1}
+                                                        aria-label={`Move variant image ${imageIndex + 1} later`}
+                                                        onClick={() => reorderCombinationImage(comboIndex, imageIndex, 1)}
+                                                        className="rounded border px-1 text-xs disabled:opacity-30"
+                                                    >
+                                                        →
+                                                    </button>
+                                                </div>
                                                 <button
                                                     type="button"
                                                     onClick={() => {
@@ -494,13 +539,14 @@ const ProductVariantEditor = ({
                                                 </button>
                                             </div>
                                         ))}
-                                    </div>
+                                        </div>
+                                    </>
                                 )}
 
                                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_auto_auto_auto] sm:items-center">
                                 <input
                                     value={combo.image || ""}
-                                    placeholder="Main variant image URL"
+                                    placeholder="Main variant image URL (optional)"
                                     className="min-w-0 rounded-lg border p-2"
                                     onChange={(e) => {
                                         const image = e.target.value;
@@ -514,7 +560,7 @@ const ProductVariantEditor = ({
                                     }}
                                 />
                                 <label className="cursor-pointer rounded-lg border px-3 py-2 text-center text-sm">
-                                    Upload Main
+                                    Upload cover
                                     <input
                                         type="file"
                                         accept="image/jpeg,image/png,image/webp"
@@ -523,7 +569,7 @@ const ProductVariantEditor = ({
                                     />
                                 </label>
                                 <label className="cursor-pointer rounded-lg border px-3 py-2 text-center text-sm">
-                                    Upload Gallery
+                                    Upload more images
                                     <input
                                         type="file"
                                         multiple
@@ -549,7 +595,7 @@ const ProductVariantEditor = ({
                         onClick={() => onCombinationsChange([...comboRows, { ...emptyCombination }])}
                         className="rounded-lg bg-[#3A001F] px-4 py-2 text-sm font-semibold text-white"
                     >
-                        Add Pair / Variant
+                        Add one variant manually
                     </button>
 
                     <button
@@ -558,7 +604,7 @@ const ProductVariantEditor = ({
                         disabled={missingCombinationCount <= 0}
                         className="ml-2 rounded-lg border border-[#3A001F] px-4 py-2 text-sm font-semibold text-[#3A001F] disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                        Generate Missing Pairs ({missingCombinationCount})
+                        Create all variant rows ({missingCombinationCount})
                     </button>
                 </div>
             )}

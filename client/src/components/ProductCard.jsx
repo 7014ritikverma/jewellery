@@ -38,12 +38,12 @@ const ProductCard = ({
   };
 
   return (
-    <article className="group w-full">
-      <div className="relative overflow-hidden rounded-lg bg-[#f8e8e5] shadow-sm ring-1 ring-[#efd7d9]">
+    <article className="group w-full animate-card-in transition-transform duration-300 ease-out hover:-translate-y-1">
+      <div className="relative overflow-hidden rounded-xl bg-[#f8e8e5] shadow-sm ring-1 ring-[#efd7d9]">
         <button
           type="button"
           onClick={openProduct}
-          className={`block w-full overflow-hidden text-left ${compact ? "aspect-[1.06/1]" : "aspect-square"
+          className={`block w-full overflow-hidden bg-amber-600 text-left ${compact ? "aspect-[1.06/1]" : "aspect-square"
             }`}
         >
           <img
@@ -89,13 +89,13 @@ const ProductCard = ({
       </div>
 
       <button type="button" onClick={openProduct} className="mt-3 block w-full text-left">
-        <p className="parkinsans text-sm font-extrabold leading-none text-[#3A001F] sm:text-base">
+        <h3 className="line-clamp-1 bodoni-moda tracking-wide text-sm font-normal group-hover:underline leading-5 text-black sm:text-base">
+          {product.name}
+        </h3>
+        <p className="bodoni-moda mt-2 text-sm font-bold leading-none text-[#3A001F] sm:text-base">
           ₹ {formatPrice(displayPrice)}.00
         </p>
 
-        <h3 className="mt-2 line-clamp-1 parkinsans text-xs font-medium leading-5 text-black sm:text-sm">
-          {product.name}
-        </h3>
       </button>
     </article>
   );

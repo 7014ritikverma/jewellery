@@ -49,6 +49,18 @@ const categoryCardSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const videoReelSchema = new mongoose.Schema(
+  {
+    title: String,
+    videoUrl: String,
+    thumbnail: String,
+    product: { type: mongoose.Schema.Types.ObjectId, ref: "Product", default: null },
+    link: linkSchema,
+    isActive: { type: Boolean, default: true },
+  },
+  { _id: false }
+);
+
 const homeContentSchema = new mongoose.Schema(
   {
     key: { type: String, default: "home", unique: true },
@@ -56,6 +68,7 @@ const homeContentSchema = new mongoose.Schema(
     categoryCards: [categoryCardSchema],
     featuredProduct: { type: mongoose.Schema.Types.ObjectId, ref: "Product", default: null },
     bannerCards: [bannerCardSchema],
+    videoReels: [videoReelSchema],
   },
   { timestamps: true }
 );

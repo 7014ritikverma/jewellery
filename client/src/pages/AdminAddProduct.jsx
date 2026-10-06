@@ -638,6 +638,15 @@ const AdminAddProduct = (props) => {
     const basePrice = materialMetalValue > 0
         ? materialMetalValue
         : Number(form.price || 0) || lowestVariantBasePrice;
+    const variantImageUrls = (form.variantCombinations || [])
+        .flatMap((combo) => (
+            Array.isArray(combo?.images) && combo.images.length
+                ? combo.images
+                : [combo?.image]
+        ))
+        .filter(Boolean)
+        .filter((image, index, list) => list.indexOf(image) === index);
+    const hasAnyProductImage = preview.length > 0 || variantImageUrls.length > 0;
 
     const handleSubmit = async (e, nextPublished = form.isPublished) => {
         e.preventDefault();
@@ -653,7 +662,9 @@ const AdminAddProduct = (props) => {
         }
 
         try {
-            let imageUrls = preview;
+            // A variant/pair image can also be the product's main image when no
+            // separate product gallery image was uploaded.
+            let imageUrls = preview.length ? preview : variantImageUrls;
             let uploadedVideoUrl = videoPreview;
 
             if (images.length > 0 || video) {
@@ -678,7 +689,8 @@ const AdminAddProduct = (props) => {
                     }
                 );
 
-                imageUrls = uploadRes.data.urls || preview;
+                const uploadedImages = uploadRes.data?.urls || [];
+                imageUrls = uploadedImages.length ? uploadedImages : imageUrls;
                 uploadedVideoUrl =
                     uploadRes.data.videoUrl || videoPreview;
             }
@@ -799,7 +811,7 @@ const AdminAddProduct = (props) => {
     }, [productId]);
 
     return (
-        <div className="w-full">
+        <div className="admin-product-form w-full">
 
             <form
                 onSubmit={handleSubmit}
@@ -986,9 +998,10 @@ const AdminAddProduct = (props) => {
                         type="file"
                         multiple
                         accept="image/jpeg,image/png,image/webp"
-                        required={!productId}
+                        required={!productId && !hasAnyProductImage}
                         onChange={(e) => {
-                            const files = Array.from(e.target.files).reverse(); // 🔥 FIX
+                            // Keep the selection order: the first image is the product cover.
+                            const files = Array.from(e.target.files);
                             if (files.length > maxProductImages) {
                                 alert(`Please select up to ${maxProductImages} product images.`);
                                 e.target.value = "";
@@ -1009,11 +1022,57 @@ const AdminAddProduct = (props) => {
                     />
                 </div>
 
+                <p className="-mt-3 text-xs text-gray-600">
+                    Images are saved in the same order you select them. Image 1 is the cover image. Use the arrows to change the order.
+                </p>
+
                 {/* Preview */}
-                <div className="flex gap-2 flex-wrap">
+                <div className="flex flex-wrap gap-3">
                     {preview.map((img, i) => (
-                        <div key={i} className="relative">
-                            <img src={img} className="h-20 w-20 rounded-lg" />
+                        <div key={img} className="relative rounded-lg border bg-white p-1">
+                            <span className="absolute left-1 top-1 z-10 rounded bg-[#3A001F] px-1.5 py-0.5 text-xs font-semibold text-white">
+                                {i === 0 ? "Cover" : `Image ${i + 1}`}
+                            </span>
+                            <img src={img} alt={`Product preview ${i + 1}`} className="h-20 w-20 rounded-lg object-cover" />
+
+                            <div className="mt-1 flex justify-center gap-1">
+                                <button
+                                    type="button"
+                                    disabled={i === 0}
+                                    aria-label={`Move image ${i + 1} earlier`}
+                                    onClick={() => {
+                                        const nextPreview = [...preview];
+                                        [nextPreview[i - 1], nextPreview[i]] = [nextPreview[i], nextPreview[i - 1]];
+                                        if (images.length === preview.length) {
+                                            const nextImages = [...images];
+                                            [nextImages[i - 1], nextImages[i]] = [nextImages[i], nextImages[i - 1]];
+                                            setImages(nextImages);
+                                        }
+                                        setPreview(nextPreview);
+                                    }}
+                                    className="rounded border px-1.5 text-xs disabled:cursor-not-allowed disabled:opacity-30"
+                                >
+                                    ←
+                                </button>
+                                <button
+                                    type="button"
+                                    disabled={i === preview.length - 1}
+                                    aria-label={`Move image ${i + 1} later`}
+                                    onClick={() => {
+                                        const nextPreview = [...preview];
+                                        [nextPreview[i], nextPreview[i + 1]] = [nextPreview[i + 1], nextPreview[i]];
+                                        if (images.length === preview.length) {
+                                            const nextImages = [...images];
+                                            [nextImages[i], nextImages[i + 1]] = [nextImages[i + 1], nextImages[i]];
+                                            setImages(nextImages);
+                                        }
+                                        setPreview(nextPreview);
+                                    }}
+                                    className="rounded border px-1.5 text-xs disabled:cursor-not-allowed disabled:opacity-30"
+                                >
+                                    →
+                                </button>
+                            </div>
 
                             {/* ❌ REMOVE BUTTON */}
                             <button

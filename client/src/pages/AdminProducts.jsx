@@ -761,7 +761,7 @@ const AdminProducts = () => {
     };
 
     return (
-        <div className="p-6 text-[#3A001F]">
+        <div className="admin-products-page p-6 text-[#3A001F]">
 
             <div className="flex items-center justify-between mb-6">
                 <h1 className="text-3xl font-bold">
@@ -862,7 +862,7 @@ const AdminProducts = () => {
 
                                         <button
                                             onClick={() =>
-                                                navigate(`//admin/add-product?id=${p._id}`)
+                                                navigate(`/admin?tab=addProduct&id=${p._id}`)
                                             }
                                             className="bg-[#3A001F] cursor-pointer text-white px-3 py-1 rounded"
                                         >
@@ -893,7 +893,7 @@ const AdminProducts = () => {
             </div>
 
             {editing && (
-                <div className="fixed inset-0 text-[#3A001F] bg-black/50 z-50 flex items-center justify-center">
+                <div className="admin-product-modal fixed inset-0 text-[#3A001F] bg-black/50 z-50 flex items-center justify-center">
 
                     <div className="bg-white w-[95%] max-w-5xl max-h-[90vh] overflow-y-auto rounded-xl p-6">
 
@@ -932,7 +932,7 @@ const AdminProducts = () => {
             )}
 
             {viewProduct && (
-                <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-6">
+                <div className="admin-product-modal fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-6">
 
                     <div className="bg-white text-[#3A001F] rounded-xl w-full max-w-6xl max-h-[90vh] overflow-y-auto p-6">
 

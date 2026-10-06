@@ -204,7 +204,7 @@ const Products = ({ homeView = false }) => {
   );
   const filterContent = (
     <>
-      <div>
+      <div className="bodoni-moda">
         <label className="mb-1 block text-sm font-semibold text-[#3A001F]">
           Min Price
         </label>
@@ -219,7 +219,7 @@ const Products = ({ homeView = false }) => {
         />
       </div>
 
-      <div>
+      <div className="bodoni-moda" >
         <label className="mb-1 block text-sm font-semibold text-[#3A001F]">
           Max Price
         </label>
@@ -234,7 +234,7 @@ const Products = ({ homeView = false }) => {
         />
       </div>
 
-      <div>
+      <div className="bodoni-moda">
         <label className="mb-1 block text-sm font-semibold text-[#3A001F]">
           Rating
         </label>
@@ -249,7 +249,7 @@ const Products = ({ homeView = false }) => {
         </select>
       </div>
 
-      <div>
+      <div className="bodoni-moda">
         <label className="mb-1 block text-sm font-semibold text-[#3A001F]">
           Metal
         </label>
@@ -270,7 +270,7 @@ const Products = ({ homeView = false }) => {
       <button
         type="button"
         onClick={clearFilters}
-        className="min-h-10 rounded-md border border-[#d8c3b8] px-4 text-sm font-semibold text-[#3A001F] transition hover:border-[#3A001F]"
+        className="min-h-10 bodoni-moda rounded-md border border-[#d8c3b8] px-4 text-sm font-semibold text-[#3A001F] transition hover:border-[#3A001F]"
       >
         Clear
       </button>
@@ -278,7 +278,7 @@ const Products = ({ homeView = false }) => {
   );
 
   return (
-    <div className={homeView ? "" : "pt-[132px] lg:pt-[172px]"}>
+    <div className={homeView ? "" : "pt-[90px] bodoni-moda"}>
       {!homeView && (
         <div className="mx-auto max-w-[1500px] px-4 pt-8 sm:px-6 lg:px-8">
           <div className="rounded-lg border border-[#3A001F]/10 bg-white p-4 shadow-sm lg:hidden">

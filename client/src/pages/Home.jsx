@@ -59,12 +59,13 @@ const Home = () => {
   const [bestSellers, setBestSellers] = useState([]);
   const [homeContent, setHomeContent] = useState(null);
   const categorySliderRef = useRef(null);
+  const reelsSliderRef = useRef(null);
 
   const defaultHeroSlides = useMemo(
     () => [
       {
         image:
-          "https://khushbujewellers.com/cdn/shop/files/khushbu_banner_2100.900.webp?v=1779797281&width=1600",
+          "https://khushbujewellers.com/cdn/shop/files/Luxury_Pendant_Collection.webp?v=1790053437&width=1600",
         path: "/shop?category=Necklace",
       },
       {
@@ -75,6 +76,11 @@ const Home = () => {
       {
         image:
           "https://khushbujewellers.com/cdn/shop/files/MANGALSUTRA_5945f9b8-24db-4366-8b92-58d10dd14013.webp?v=1778320805&width=1600",
+        path: "/shop?category=Diamond",
+      },
+      {
+        image:
+          "https://khushbujewellers.com/cdn/shop/files/hero_banner_3.webp?v=1789971862&width=1600",
         path: "/shop?category=Diamond",
       },
     ],
@@ -235,58 +241,34 @@ const Home = () => {
     { label: "Above ₹ 19,999", icon: GiLaurelsTrophy, min: 19999 },
   ];
 
-  const defaultBannerCards = [
-    {
-      title: "Gift Edit",
-      eyebrow: "For Her, Him & Boys",
-      text: "Rings, bracelets, chains and easy daily-wear picks.",
-      cta: "Explore Gifts",
-      image:
-        "https://images.unsplash.com/photo-1513885535751-8b9238bd345a?q=80&w=1000&auto=format&fit=crop",
-      path: "/shop?search=Gift",
-      tone: "from-[#fbe1e6] to-[#fff6f0]",
-    },
-    {
-      title: "Men's Collection",
-      eyebrow: "Timeless. Bold. You.",
-      text: "Refined pieces in clean silhouettes",
-      cta: "Shop Now",
-      image:
-        "https://images.unsplash.com/photo-1520367445093-50dc08a59d9d?q=80&w=1000&auto=format&fit=crop",
-      path: "/shop?search=Men",
-      tone: "from-[#20262f] to-[#7d858d]",
-      dark: true,
-    },
-    {
-      title: "Anniversary Collection",
-      eyebrow: "Celebrate Love Forever",
-      text: "Rings, necklaces and keepsake pieces for milestones.",
-      cta: "Shop Now",
-      image:
-        "https://images.unsplash.com/photo-1529634806980-85c3dd6d34ac?q=80&w=1000&auto=format&fit=crop",
-      path: "/shop?search=Anniversary",
-      tone: "from-[#fee4e5] to-[#fff8f4]",
-    },
+  const defaultMomentCards = [
+    { title: "Everyday Shine", eyebrow: "Curated for you", text: "Light, lovely & made for every day", cta: "Discover daily wear", path: "/shop?type=new", image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=85&w=1200&auto=format&fit=crop" },
+    { title: "For Your Forever", eyebrow: "Curated for you", text: "Little symbols of a big promise", cta: "Explore rings", path: "/shop?search=Ring", image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=85&w=900&auto=format&fit=crop" },
+    { title: "A Gift With Meaning", eyebrow: "Curated for you", text: "A beautiful surprise, chosen with love", cta: "Find a gift", path: "/shop?search=Gift", image: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=85&w=900&auto=format&fit=crop" },
   ];
 
-  const bannerCards = useMemo(() => {
+  const momentCards = useMemo(() => {
     const cards = Array.isArray(homeContent?.bannerCards)
-      ? homeContent.bannerCards.filter((banner) => banner?.image && banner.isActive !== false)
+      ? homeContent.bannerCards.filter((card) => card?.image && card.isActive !== false)
       : [];
+    const displayCards = cards.length ? cards : defaultMomentCards;
+    const layoutClasses = ["md:col-span-2 md:row-span-2", "md:col-span-2", "md:col-span-2"];
 
-    return cards.length
-      ? cards.map((banner) => ({
-        title: banner.title || "Gift Edit",
-        eyebrow: banner.eyebrow || "",
-        text: banner.text || "",
-        cta: banner.cta || "Shop Now",
-        image: banner.image,
-        path: buildShopPath(banner.link),
-        tone: banner.tone || "from-[#fbe1e6] to-[#fff6f0]",
-        dark: Boolean(banner.dark),
-      }))
-      : defaultBannerCards;
+    return displayCards.slice(0, 3).map((card, index) => ({
+      title: card.title || "Jewellery for every moment",
+      eyebrow: card.eyebrow || "Curated for you",
+      text: card.text || "Discover a piece made to be remembered.",
+      cta: card.cta || "Explore collection",
+      image: card.image,
+      path: card.path || buildShopPath(card.link),
+      className: layoutClasses[index] || "md:col-span-2",
+    }));
   }, [homeContent]);
+  const videoReels = useMemo(() => (
+    Array.isArray(homeContent?.videoReels)
+      ? homeContent.videoReels.filter((reel) => reel?.videoUrl && reel.isActive !== false)
+      : []
+  ), [homeContent]);
 
   const scrollCategorySlider = (directionValue) => {
     const slider = categorySliderRef.current;
@@ -297,6 +279,33 @@ const Home = () => {
     const gap = Number.parseFloat(getComputedStyle(slider).columnGap || "0");
     const width = card?.getBoundingClientRect().width || 106;
     slider.scrollBy({ left: directionValue * (width + gap) * 3, behavior: "smooth" });
+  };
+
+  const scrollReels = (directionValue) => {
+    const slider = reelsSliderRef.current;
+    if (!slider) return;
+
+    const cards = Array.from(slider.querySelectorAll("[data-reel-card]"));
+    if (!cards.length) return;
+
+    const atStart = slider.scrollLeft <= 2;
+    const atEnd = slider.scrollLeft + slider.clientWidth >= slider.scrollWidth - 2;
+    if (directionValue > 0 && atEnd) {
+      slider.scrollTo({ left: 0, behavior: "smooth" });
+      return;
+    }
+    if (directionValue < 0 && atStart) {
+      slider.scrollTo({ left: slider.scrollWidth, behavior: "smooth" });
+      return;
+    }
+
+    const currentIndex = cards.reduce((closestIndex, card, index) => (
+      Math.abs(card.offsetLeft - slider.scrollLeft) < Math.abs(cards[closestIndex].offsetLeft - slider.scrollLeft)
+        ? index
+        : closestIndex
+    ), 0);
+    const nextIndex = (currentIndex + directionValue + cards.length) % cards.length;
+    slider.scrollTo({ left: cards[nextIndex].offsetLeft, behavior: "smooth" });
   };
 
   const goToSlide = (index) => {
@@ -338,6 +347,15 @@ const Home = () => {
 
     return () => clearInterval(timer);
   }, [categories.length]);
+
+  useEffect(() => {
+    const slider = reelsSliderRef.current;
+    const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+    if (!slider || reduceMotion || videoReels.length < 2) return undefined;
+
+    const timer = setInterval(() => scrollReels(1), 4200);
+    return () => clearInterval(timer);
+  }, [videoReels.length]);
 
   useEffect(() => {
     setActiveSlide((current) => Math.min(current, Math.max(heroSlides.length - 1, 0)));
@@ -442,13 +460,13 @@ const Home = () => {
   );
 
   const ProductRow = ({ title, products, path }) => (
-    <section className="relative mx-auto max-w-[1480px] px-4 py-8 sm:px-8">
+    <section className="relative mx-auto max-w-[1500px] px-4 py-8 sm:px-6 md:py-10 lg:px-8">
       <SectionTitle
         action={
           <button
             type="button"
             onClick={() => navigate(path)}
-            className="rounded-full border-1 border-[#581b3c] px-4 py-2 text-xs font-semibold text-[#3A001F] transition hover:bg-[#3A001F] hover:text-white"
+            className="rounded-full bodoni-moda border border-[#d9c2c9] px-4 py-2 text-xs font-semibold text-[#3A001F] transition hover:border-[#3A001F] hover:bg-[#3A001F] hover:text-white"
           >
             View all
           </button>
@@ -460,7 +478,7 @@ const Home = () => {
         <button
           type="button"
           aria-label={`Scroll ${title} left`}
-          className="absolute -left-2 top-[30%] z-10 hidden h-10 w-10 items-center justify-center rounded-full bg-white text-[#3A001F] shadow-lg ring-1 ring-[#581b3c] transition hover:bg-[#3A001F] hover:text-white md:flex"
+          className="absolute left-1 top-[30%] z-10 hidden h-10 w-10 items-center justify-center rounded-full bg-white text-[#3A001F] shadow-lg ring-1 ring-[#581b3c] transition hover:bg-[#3A001F] hover:text-white md:flex lg:left-2"
           onClick={(event) => {
             const row = event.currentTarget.nextElementSibling;
             row?.scrollBy({ left: -760, behavior: "smooth" });
@@ -468,22 +486,22 @@ const Home = () => {
         >
           <FiChevronLeft />
         </button>
-        <div className="flex gap-5 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex snap-x snap-mandatory bodoni-moda gap-3 overflow-x-auto px-1 pb-2 [scrollbar-width:none] sm:gap-5 [&::-webkit-scrollbar]:hidden">
           {products.map((product) => {
             const cardWishlistKey = `${title}:${product._id}`;
 
             return (
-            <div key={`${title}-${product._id}`} className="w-[170px] shrink-0 sm:w-[196px] xl:w-[210px]">
-              <ProductCard
-                product={product}
-                addToCart={addToCart}
-                toggleWishlist={toggleWishlist}
-                isInWishlist={isInWishlist}
-                wishlistKey={cardWishlistKey}
-                compact
-              />
-            </div>
-          );
+              <div key={`${title}-${product._id}`} className="w-[44vw] shrink-0 snap-start sm:w-[196px] xl:w-[210px]">
+                <ProductCard
+                  product={product}
+                  addToCart={addToCart}
+                  toggleWishlist={toggleWishlist}
+                  isInWishlist={isInWishlist}
+                  wishlistKey={cardWishlistKey}
+                  compact
+                />
+              </div>
+            );
           })}
           {products.length === 0 && (
             <div className="w-full rounded-lg border border-[#581b3c] bg-white py-10 text-center text-sm text-[#3A001F]">
@@ -494,7 +512,7 @@ const Home = () => {
         <button
           type="button"
           aria-label={`Scroll ${title} right`}
-          className="absolute -right-2 top-[30%] z-10 hidden h-10 w-10 items-center justify-center rounded-full bg-white text-[#3A001F] shadow-lg ring-1 ring-[#581b3c] transition hover:bg-[#3A001F] hover:text-white md:flex"
+          className="absolute right-1 top-[30%] z-10 hidden h-10 w-10 items-center justify-center rounded-full bg-white text-[#3A001F] shadow-lg ring-1 ring-[#581b3c] transition hover:bg-[#3A001F] hover:text-white md:flex lg:right-2"
           onClick={(event) => {
             const row = event.currentTarget.previousElementSibling;
             row?.scrollBy({ left: 760, behavior: "smooth" });
@@ -507,9 +525,9 @@ const Home = () => {
   );
 
   return (
-    <div className="min-h-screen overflow-hidden bg-[#fffaf8] pt-[132px] text-[#3A001F] lg:pt-[117px]">
-      <section className="relative">
-        <div className="relative h-[380px] overflow-hidden sm:h-[430px] lg:h-[550px]">
+    <div className="min-h-screen overflow-x-hidden bg-[#fffaf8] pt-[90px] text-[#3A001F]">
+      <section className="relative isolate w-full bg-[#f7eceb]">
+        <div className="relative h-[clamp(220px,42.85vw,720px)] w-full overflow-hidden">
           <AnimatePresence initial={false} custom={direction}>
             <motion.div
               key={activeSlide}
@@ -524,11 +542,11 @@ const Home = () => {
                 type="button"
                 aria-label="Open hero collection"
                 onClick={() => navigate(currentSlide.path)}
-                className="h-full w-full"
+                className="block h-full w-full"
               >
                 <img
                   src={currentSlide.image}
-                  alt={currentSlide.alt || "Khushbu jewellery collection"}
+                  alt={currentSlide.alt || "Shree Sarraf jewellery collection"}
                   className="h-full w-full object-cover object-center"
                 />
               </button>
@@ -567,20 +585,20 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="bg-white py-7 ">
+      <section className="bg-white py-6 sm:py-7">
         <SectionTitle>Handpicked for You, Crafted by Us</SectionTitle>
-        <div className="relative mx-auto max-w-[1440px] px-4 sm:px-8 ">
+        <div className="relative mx-auto px-3 sm:px-6 lg:px-8">
           <button
             type="button"
             aria-label="Scroll categories left"
             onClick={() => scrollCategorySlider(-1)}
-            className="absolute left-2 top-10 z-10 hidden h-9 w-9 items-center justify-center rounded-full bg-white hover:bg-[#3A001F] hover:text-white text-[#3A001F] shadow-md ring-1 ring-[#581b3c] md:flex"
+            className="absolute left-2 top-16 z-10 hidden h-9 w-9 items-center justify-center rounded-full bg-white hover:bg-[#3A001F] hover:text-white text-[#3A001F] shadow-md ring-1 ring-[#581b3c] md:flex"
           >
             <FiChevronLeft />
           </button>
           <div
             ref={categorySliderRef}
-            className="flex gap-5 overflow-x-auto px-2 pb-1 [scrollbar-width:none] sm:gap-8 sm:px-8 [&::-webkit-scrollbar]:hidden"
+            className="flex snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-1 [scrollbar-width:none] sm:gap-4 sm:px-8 lg:gap-5 [&::-webkit-scrollbar]:hidden"
           >
             {categories.map((category) => (
               <button
@@ -588,16 +606,16 @@ const Home = () => {
                 data-category-card
                 type="button"
                 onClick={() => navigate(resolveCategoryPath(category))}
-                className="group min-w-[96px] py-1 text-center sm:min-w-[140px]"
+                className="group min-w-[82px] snap-start py-1 text-center sm:min-w-[126px] lg:min-w-[140px]"
               >
-                <span className="mx-auto flex h-[82px] w-[82px] items-center justify-center overflow-hidden rounded-full bg-[#fdecef] p-[6px] ring-1 ring-[#581b3c]  group-hover:shadow-lg sm:h-[130px] sm:w-[130px]">
+                <span className="mx-auto flex h-[76px] w-[76px] items-center justify-center overflow-hidden rounded-xl bg-[#fdecef] group-hover:shadow-lg sm:h-[112px] sm:w-[112px] lg:h-[130px] lg:w-[130px]">
                   <img
                     src={category.image}
                     alt={category.name}
-                    className="h-full w-full rounded-full object-cover transition duration-700 group-hover:scale-110"
+                    className="h-full w-full rounded-xl object-cover transition duration-700 group-hover:scale-110"
                   />
                 </span>
-                <span className="mt-2 block flex items-center justify-center text-[12px] font-medium text-[#3A001F]">
+                <span className="mt-2 parkinsans block flex items-center justify-center text-sm font-medium tracking-wide text-[#3A001F] sm:text-base">
                   {category.name}
                 </span>
               </button>
@@ -607,14 +625,14 @@ const Home = () => {
             type="button"
             aria-label="Scroll categories right"
             onClick={() => scrollCategorySlider(1)}
-            className="absolute right-2 top-10 z-10 hidden h-9 w-9 items-center justify-center rounded-full bg-white hover:bg-[#3A001F] hover:text-white text-[#3A001F] shadow-md ring-1 ring-[#581b3c] md:flex"
+            className="absolute right-2 top-16 z-10 hidden h-9 w-9 items-center justify-center rounded-full bg-white hover:bg-[#3A001F] hover:text-white text-[#3A001F] shadow-md ring-1 ring-[#581b3c] md:flex"
           >
             <FiChevronRight />
           </button>
         </div>
       </section>
 
-      {featuredProduct && (
+      {/* {featuredProduct && (
         <section className="mx-auto max-w-[1100px] px-4 py-5 my-10 sm:px-8">
           <div className="grid overflow-hidden rounded-lg bg-white shadow-[0_16px_40px_rgba(93,42,55,0.08)] md:grid-cols-[1.05fr_1fr]">
             <button
@@ -655,7 +673,6 @@ const Home = () => {
               <p className="mt-6 text-2xl font-extrabold text-[#3A001F]">
                 ₹ {formatPrice(featuredProduct.price)}.00
               </p>
-              {/* <p className="mt-1 text-xs text-[#A56028]">Inclusive of all taxes</p> */}
               <button
                 type="button"
                 onClick={() => navigate(`/product/${featuredProduct._id}`, { state: { product: featuredProduct } })}
@@ -677,9 +694,9 @@ const Home = () => {
             </div>
           </div>
         </section>
-      )}
+      )} */}
 
-      <section className="bg-white py-8">
+      <section className="bg-[#fffdfc] py-10">
         <SectionTitle>Shop By Price</SectionTitle>
         <div className="mx-auto grid max-w-5xl grid-cols-2 gap-5 px-4 sm:grid-cols-3 md:grid-cols-6">
           {priceRanges.map((range) => {
@@ -691,10 +708,10 @@ const Home = () => {
                 onClick={() => navigate(buildPricePath(range))}
                 className="group text-center"
               >
-                <span className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[#fdecef] text-3xl text-[#A56028] ring-1 ring-[#581b3c] transition group-hover:-translate-y-1 group-hover:bg-[#3A001F] group-hover:text-[#FFBC73]">
+                <span className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[#fdecef] text-3xl text-[#A56028] transition group-hover:-translate-y-1 group-hover:bg-[#3A001F] group-hover:text-[#FFBC73]">
                   <Icon />
                 </span>
-                <span className="mt-3 block text-xs font-semibold text-[#3A001F]">
+                <span className="mt-3 block bodoni-moda text-sm font-semibold text-[#3A001F]">
                   {range.label}
                 </span>
               </button>
@@ -707,60 +724,86 @@ const Home = () => {
       <ProductRow title="Best Sellers" products={bestSellers} path="/shop?type=bestseller" />
       <ProductRow title="New Arrivals" products={newArrivals} path="/shop?type=new" />
 
-      <section className="mx-auto grid max-w-[1320px] gap-6 px-4 py-7 sm:px-8 lg:grid-cols-3">
-        {bannerCards.map((banner) => (
-          <button
-            key={banner.title}
-            type="button"
-            onClick={() => navigate(banner.path)}
-            className={`group relative h-[220px] overflow-hidden rounded-lg bg-gradient-to-r ${banner.tone} text-left shadow-[0_14px_30px_rgba(92,11,42,0.08)]`}
-          >
-            <img
-              src={banner.image}
-              alt={banner.title}
-              className="absolute inset-y-0 right-0 h-full w-[58%] object-cover transition duration-700 group-hover:scale-105"
-            />
-            <div className={`absolute inset-0 ${banner.dark ? "bg-gradient-to-r from-[#3A001F]/90 via-[#3A001F]/55 to-transparent" : "bg-gradient-to-r from-white/88 via-white/55 to-transparent"}`} />
-            <div className={`relative z-10 flex h-full max-w-[58%] flex-col justify-center p-7 ${banner.dark ? "text-[#FFBC73]" : "text-[#4b0b24]"}`}>
-              <p className="text-[11px] font-bold uppercase tracking-[1.4px]">
-                {banner.eyebrow}
-              </p>
-              <h3 className="bodoni-moda text-white mt-1 text-3xl font-bold leading-tight">
-                {banner.title}
-              </h3>
-              <p className="mt-2 text-xs font-medium text-white/90 opacity-80">{banner.text}</p>
-              <span className="mt-5 w-fit rounded-md bg-[#5c0b2a] px-5 py-2 text-[10px] font-bold uppercase tracking-[1px] text-white">
-                {banner.cta}
-              </span>
-            </div>
-          </button>
-        ))}
+      <section className="mx-auto max-w-[1320px] px-4 py-10 sm:px-8">
+        <div className="mb-6 flex flex-col items-start justify-between gap-3 sm:mb-8 sm:flex-row sm:items-end">
+          <div>
+            <p className="parkinsans text-xs font-bold uppercase tracking-[0.22em] text-[#A56028]">Made for your moments</p>
+            <h2 className="bodoni-moda mt-2 text-3xl font-semibold text-[#3A001F] sm:text-4xl">Jewellery with a story</h2>
+          </div>
+          <button type="button" onClick={() => navigate("/shop")} className="parkinsans text-sm font-bold text-[#6b0f1a] underline decoration-[#d9a77c] decoration-2 underline-offset-4">View all jewellery</button>
+        </div>
+        <div className="grid gap-4 md:grid-cols-4 md:grid-rows-2 sm:gap-6">
+          {momentCards.map((card) => (
+            <button key={card.title} type="button" onClick={() => navigate(card.path)} className={`group relative min-h-[220px] overflow-hidden rounded-2xl text-left ${card.className}`}>
+              <img src={card.image} alt="" className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#260012]/90 via-[#3A001F]/28 to-transparent" />
+              <div className="relative flex h-full min-h-[220px] flex-col justify-end p-6 sm:p-7">
+                <p className="parkinsans text-[11px] font-bold uppercase tracking-[0.16em] text-[#ffd9aa]">{card.eyebrow}</p>
+                <h3 className="bodoni-moda mt-2 text-3xl font-semibold leading-none text-white">{card.title}</h3>
+                <p className="mt-2 max-w-sm text-sm text-white/85">{card.text}</p>
+                <span className="mt-5 w-fit border-b border-[#ffd9aa] pb-1 parkinsans text-xs font-bold uppercase tracking-[0.1em] text-white">{card.cta}</span>
+              </div>
+            </button>
+          ))}
+        </div>
       </section>
 
-
-
       <section className="mx-auto max-w-[1320px] px-4 py-8 sm:px-8">
-        <SectionTitle>The <span className="text-[#A56028] font-semibold">Shree Sarraf</span> Promise</SectionTitle>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <SectionTitle>The <span className="text-[#A56028] parkinsans font-bold">Shree Sarraf</span> Promise</SectionTitle>
+        <div className="grid gap-4 sm:grid-cols-2 bodoni-moda lg:grid-cols-5">
           {promiseCards.map((promise) => {
             const Icon = promise.icon;
             return (
               <div
                 key={promise.title}
-                className="flex items-center gap-4 rounded-lg border border-[#581b3c] bg-white px-5 py-5 shadow-[0_12px_24px_rgba(92,11,42,0.05)]"
+                className="flex items-center gap-4 rounded-lg bg-white px-5 py-5"
               >
                 <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#fdecef] text-xl text-[#3A001F]">
                   <Icon />
                 </span>
                 <div>
                   <h3 className="text-sm font-bold text-[#A56028]">{promise.title}</h3>
-                  <p className="mt-1 text-xs text-[#7d5363]">{promise.text}</p>
+                  <p className="mt-1 tracking-wide text-xs text-[#7d5363]">{promise.text}</p>
                 </div>
               </div>
             );
           })}
         </div>
       </section>
+
+      {videoReels.length > 0 && (
+        <section className="w-full bodoni-moda px-4 pb-10 pt-4 sm:px-8 lg:px-10 xl:px-12">
+          <div className="mb-5 flex items-center justify-between gap-4">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[1.8px] text-[#A56028]">Watch & shop</p>
+              <h2 className="parkinsans text-2xl font-bold text-[#3A001F] sm:text-3xl">Reels</h2>
+            </div>
+            {videoReels.length > 1 && (
+              <div className="flex gap-2">
+                <button type="button" onClick={() => scrollReels(-1)} aria-label="Previous reels" className="rounded-full border border-[#581b3c] p-2 text-[#3A001F] transition hover:bg-[#3A001F] hover:text-white"><FiChevronLeft /></button>
+                <button type="button" onClick={() => scrollReels(1)} aria-label="Next reels" className="rounded-full border border-[#581b3c] p-2 text-[#3A001F] transition hover:bg-[#3A001F] hover:text-white"><FiChevronRight /></button>
+              </div>
+            )}
+          </div>
+          <div ref={reelsSliderRef} className="flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth pb-3 [scrollbar-width:none] sm:gap-4 [&::-webkit-scrollbar]:hidden">
+            {videoReels.map((reel, index) => {
+              const product = reel.product;
+              const path = product?._id ? `/product/${product._id}` : buildShopPath(reel.link);
+              return (
+                <article data-reel-card key={`${reel.videoUrl}-${index}`} className="w-[72vw] max-w-[290px]  border border-[#3A001F] shrink-0 snap-start overflow-hidden rounded-xl bg-[#1f0711] shadow-[0_12px_28px_rgba(58,0,31,0.18)] sm:w-[235px] sm:max-w-none lg:w-[260px] xl:w-[280px]">
+                  <video src={reel.videoUrl} autoPlay muted loop playsInline preload="metadata" className="aspect-[9/14] w-full bg-black object-cover" /> 
+                  <div className="min-h-[106px] bg-[#ffffff] p-3 text-[#3A001F] sm:min-h-[110px]">
+                    <h3 className="line-clamp-1 text-sm font-bold">{reel.title || product?.name || "Featured collection"}</h3>
+                    {product?.price > 0 && <p className="mt-2 text-sm font-extrabold">₹ {formatPrice(product.price)}</p>}
+                    <button type="button" onClick={() => navigate(path)} className="mt-2 w-full rounded-md bg-[#A56028] text-white px-3 py-2 text-xs font-bold transition hover:text-black hover:bg-gray-200">{product ? "SHOP NOW" : "EXPLORE"}</button>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+          {/* <p className="mt-1 text-xs text-[#7d5363]">Swipe to browse more videos.</p> */}
+        </section>
+      )}
     </div>
   );
 };

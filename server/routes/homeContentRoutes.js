@@ -56,8 +56,21 @@ const normalizeCategoryCards = (cards = []) => (
   isActive: card.isActive !== false,
 })).filter((card) => card.name && card.image);
 
+const normalizeVideoReels = (reels = []) => (
+  Array.isArray(reels) ? reels : []
+).map((reel) => ({
+  title: cleanString(reel.title),
+  videoUrl: cleanString(reel.videoUrl),
+  thumbnail: cleanString(reel.thumbnail),
+  product: cleanString(reel.product) || null,
+  link: normalizeLink(reel.link),
+  isActive: reel.isActive !== false,
+})).filter((reel) => reel.videoUrl);
+
 const getHomeContent = async () => {
-  return HomeContent.findOne({ key: "home" }).populate("featuredProduct");
+  return HomeContent.findOne({ key: "home" })
+    .populate("featuredProduct")
+    .populate("videoReels.product");
 };
 
 router.get("/", async (req, res) => {
@@ -83,6 +96,18 @@ router.put("/", adminAuth, async (req, res) => {
       if (!exists) return res.status(400).json("Selected featured product was not found");
     }
 
+    const videoReels = normalizeVideoReels(req.body.videoReels);
+    const reelProductIds = videoReels.map((reel) => reel.product).filter(Boolean);
+    if (reelProductIds.some((id) => !mongoose.Types.ObjectId.isValid(id))) {
+      return res.status(400).json("A reel has an invalid linked product");
+    }
+    if (reelProductIds.length) {
+      const productCount = await Product.countDocuments({ _id: { $in: reelProductIds } });
+      if (productCount !== new Set(reelProductIds).size) {
+        return res.status(400).json("A reel's linked product was not found");
+      }
+    }
+
     const content = await HomeContent.findOneAndUpdate(
       { key: "home" },
       {
@@ -91,9 +116,10 @@ router.put("/", adminAuth, async (req, res) => {
         categoryCards: normalizeCategoryCards(req.body.categoryCards),
         featuredProduct: featuredProduct || null,
         bannerCards: normalizeBannerCards(req.body.bannerCards),
+        videoReels,
       },
       { upsert: true, new: true, setDefaultsOnInsert: true }
-    ).populate("featuredProduct");
+    ).populate("featuredProduct").populate("videoReels.product");
 
     res.json(content);
   } catch (err) {

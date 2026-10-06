@@ -76,6 +76,7 @@ const getTrackingStatus = (payload = {}) => {
 const mapTrackingStatusToOrderStatus = (status = "") => {
     const value = String(status).toLowerCase();
 
+    if (value.includes("out for delivery") || value.includes("ofd")) return "Out for Delivery";
     if (value.includes("deliver")) return "Delivered";
     if (value.includes("pickup") || value.includes("manifest") || value.includes("assign")) return "Processing";
     if (value.includes("ship") || value.includes("transit") || value.includes("ofd") || value.includes("out for delivery")) return "Shipped";
@@ -617,8 +618,31 @@ router.get("/:id", auth, async (req, res) => {
     }
 });
 
-router.put("/:id", adminAuth, async (req, res) => {
-    res.status(405).json("Manual order status update is disabled. Use Shiprocket actions and live tracking.");
+router.put("/:id/status", adminAuth, async (req, res) => {
+    try {
+        const allowedStatuses = ["Placed", "Out for Delivery", "Delivered"];
+        const status = String(req.body?.status || "").trim();
+        const note = String(req.body?.note || "").trim().slice(0, 300);
+
+        if (!allowedStatuses.includes(status)) {
+            return res.status(400).json({ message: "Only Placed, Out for Delivery, and Delivered can be set manually" });
+        }
+
+        const order = await Order.findById(req.params.id);
+        if (!order) return res.status(404).json({ message: "Order not found" });
+
+        order.status = status;
+        order.statusHistory.push({ status, note: note || "Updated by admin", updatedAt: new Date() });
+        await order.save();
+
+        const updated = await Order.findById(order._id)
+            .populate("user", "name email mobile phone")
+            .populate("items.product");
+        res.json(updated);
+    } catch (err) {
+        console.log("Manual status update failed:", err.message);
+        res.status(500).json({ message: "Could not update order status" });
+    }
 });
 
 router.put("/:id/return", adminAuth, async (req, res) => {

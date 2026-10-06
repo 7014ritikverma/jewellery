@@ -116,7 +116,7 @@ const Wishlist = () => {
 
   return (
 
-    <div className="fixed inset-0 z-[70] mt-0 bg-black/45 text-[#3A001F]">
+    <div className="fixed inset-0 z-[70] mt-0 bodoni-moda bg-black/45 text-[#3A001F]">
       <button
         type="button"
         aria-label="Close wishlist"

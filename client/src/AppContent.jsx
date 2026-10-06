@@ -1,3 +1,4 @@
+import { AnimatePresence } from "framer-motion";
 import { Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -23,6 +24,7 @@ import AdminAddProduct from "./pages/AdminAddProduct";
 import AdminLogin from "./pages/AdminLogin";
 import OrderDetails from "./pages/OrderDetails";
 import ScrollToTop from "./components/ScrollToTop";
+import PageTransition from "./components/PageTransition";
 
 <Route path="/order/:id" element={<OrderDetails />} />
 
@@ -53,6 +55,8 @@ function AppContent() {
       {!isAdminRoute && !isCheckoutRoute && <Navbar />}
 
 
+      <AnimatePresence mode="wait">
+      <PageTransition key={location.pathname}>
       <Routes location={backgroundLocation || location}>
         <Route path="/" element={<Home />} />
         <Route path="/shop" element={<Products />} />
@@ -155,6 +159,8 @@ function AppContent() {
           }
         />
       </Routes>
+      </PageTransition>
+      </AnimatePresence>
 
       {backgroundLocation && (
         <Routes>

@@ -147,20 +147,24 @@ const MyOrders = () => {
     }, [fetchOrders]);
 
     return (
-        <div className="p-10 mt-20 bg-gray-100 text-[#3A001F] min-h-screen">
-            <div className="max-w-5xl mx-auto">
-                <div className="bg-white p-6 rounded-xl shadow">
-                    <h2 className="text-xl font-bold mb-4">My Orders</h2>
+        <div className="min-h-screen bodoni-moda bg-[#fffaf8] px-4 pb-16 pt-36 text-[#3A001F] sm:px-6 lg:pt-40">
+            <div className="mx-auto max-w-5xl">
+                <div>
+                    <div className="mb-7 border-b border-[#ead7dc] pb-5">
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#A56028]">Account</p>
+                        <h1 className="mt-2 text-2xl font-semibold sm:text-3xl">My orders</h1>
+                        <p className="mt-2 text-sm text-[#7d5363]">Track purchases, delivery updates and returns.</p>
+                    </div>
 
-                    <div className="flex mb-6">
+                    <div className="mb-7 flex border-b border-[#cdaeb7] focus-within:border-[#3A001F]">
                         <input
                             type="text"
                             placeholder="Search your orders here"
-                            className="flex-1 p-3 border outline-none rounded-l"
+                            className="flex-1 bg-transparent px-0 py-3 outline-none"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                         />
-                        <button className="bg-blue-600 text-white px-6 rounded-r">
+                        <button type="button" className="mb-1 rounded-md bg-[#3A001F] px-5 text-sm font-semibold text-white">
                             Search Orders
                         </button>
                     </div>
@@ -173,12 +177,12 @@ const MyOrders = () => {
                             message="Your orders or matching search results will appear here."
                         />
                     ) : (
-                        <div className="space-y-4">
+                        <div className="divide-y divide-[#ead7dc]">
                             {filteredOrders.map(order => {
                                 const item = order.items?.[0]?.product;
 
                                 return (
-                                    <div key={order._id} className="border p-4 rounded-lg hover:shadow-md transition">
+                                    <article key={order._id} className="py-7 first:pt-0">
                                 
                                         <div
                                             onClick={() => navigate(`/order/${order._id}`)}
@@ -189,7 +193,7 @@ const MyOrders = () => {
 
                                                 <div
                                                     key={index}
-                                                    className="grid grid-cols-1 gap-4 border-b pb-4 mb-4 md:grid-cols-[1fr_120px_190px] md:items-center"
+                                                    className="grid grid-cols-1 gap-4 border-b border-[#ead7dc] pb-5 mb-5 md:grid-cols-[1fr_120px_190px] md:items-center"
                                                 >
 
                                                     {/* LEFT */}
@@ -198,7 +202,7 @@ const MyOrders = () => {
                                                         <img
                                                             src={item.itemImage || item.product?.images?.[0]}
                                                             alt={item.product?.name}
-                                                            className="h-20 w-20 rounded-lg object-cover border"
+                                                            className="h-20 w-20 rounded-md object-cover"
                                                         />
 
                                                         <div className="min-w-0">
@@ -258,8 +262,12 @@ const MyOrders = () => {
                                                                 ? "Your item has been delivered"
                                                                 : order.status === "Pending"
                                                                     ? "Your order is Pending"
+                                                                    : order.status === "Placed"
+                                                                        ? "Your order has been placed"
                                                                     : order.status === "Processing"
                                                                         ? "Your order is Processing"
+                                                                        : order.status === "Out for Delivery"
+                                                                            ? "Your order is out for delivery"
                                                                         : "Your order is Shipped"}
 
                                                         </p>
@@ -299,7 +307,7 @@ const MyOrders = () => {
                                             </div>
 
                                             {order.status === "Delivered" && (
-                                                <div className="mt-4 rounded-lg border border-[#ead7dc] bg-[#fff8f9] p-4" onClick={(e) => e.stopPropagation()}>
+                                                <div className="mt-5 border-l-2 border-[#ead7dc] pl-4" onClick={(e) => e.stopPropagation()}>
                                                     <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                                                         <p className="font-semibold text-[#3A001F]">Return request</p>
                                                         <span className="text-xs font-semibold text-[#7a1f3f]">
@@ -349,19 +357,19 @@ const MyOrders = () => {
 
                                             if (hasReviewed) {
                                                 return (
-                                                    <p className="mt-4 text-sm font-semibold text-green-600">
+                                                    <p className="mt-5 text-sm font-semibold text-green-600">
                                                         Review submitted for this product.
                                                     </p>
                                                 );
                                             }
 
                                             return (
-                                                <div className="mt-4 border-t pt-4">
+                                                <div className="mt-5 border-t border-[#ead7dc] pt-5">
                                                     <p className="font-semibold mb-2">Review this product</p>
 
                                                     <select
                                                         value={form.rating}
-                                                        className="border p-2 rounded mb-3"
+                                                        className="mb-3 border-b border-[#cdaeb7] bg-transparent p-2 outline-none"
                                                         onChange={(e) => updateReviewForm(order._id, item._id, "rating", Number(e.target.value))}
                                                     >
                                                         <option value={5}>5 Stars</option>
@@ -374,7 +382,7 @@ const MyOrders = () => {
                                                     <textarea
                                                         value={form.comment}
                                                         placeholder="Write your review"
-                                                        className="w-full border p-3 rounded mb-3"
+                                                        className="mb-3 w-full border-b border-[#cdaeb7] bg-transparent p-3 outline-none"
                                                         onChange={(e) => updateReviewForm(order._id, item._id, "comment", e.target.value)}
                                                     />
 
@@ -382,7 +390,7 @@ const MyOrders = () => {
                                                         type="file"
                                                         accept="image/jpeg,image/png,image/webp"
                                                         multiple
-                                                        className="mb-3 block w-full rounded border p-2 text-sm"
+                                                        className="mb-3 block w-full border-b border-[#cdaeb7] p-2 text-sm"
                                                         onChange={(e) => updateReviewForm(
                                                             order._id,
                                                             item._id,
@@ -414,7 +422,7 @@ const MyOrders = () => {
                                                 </div>
                                             );
                                         })()}
-                                    </div>
+                                    </article>
                                 );
                             })}
                         </div>

@@ -1,296 +1,38 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
+import axios from "axios";
+import { Bell, ChevronDown, ChevronLeft, ChevronRight, ClipboardList, ExternalLink, Image, LayoutDashboard, LogOut, Menu, Moon, Package, Plus, PlusSquare, Settings, ShoppingBag, ShoppingCart, Sun, UserRound, Users } from "lucide-react";
 import AdminProducts from "./AdminProducts";
 import AdminOrders from "./AdminOrders";
 import AdminAddProduct from "./AdminAddProduct";
 import AdminSettings from "./AdminSettings";
 import AdminHomeContent from "./AdminHomeContent";
-import { Menu } from "lucide-react";
-import axios from "axios";
-import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
-import {
-  LayoutDashboard,
-  ShoppingBag,
-  PlusSquare,
-  ClipboardList,
-  Image,
-  Settings,
-  LogOut, Package, ShoppingCart, Users
-} from "lucide-react";
+import AdminProfile from "./AdminProfile";
 import ConfirmDialog from "../components/ConfirmDialog";
 
-const Admin = () => {
-  const [active, setActive] = useState("dashboard");
-  const [open, setOpen] = useState(false);
-  const [counts, setCounts] = useState({
-    products: 0,
-    orders: 0,
-    users: 0
-  });
-  const [users, setUsers] = useState([]);
-  const [refresh, setRefresh] = useState(false);
-  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
-  const location = useLocation();
+const money = (value = 0) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(value);
 
-  const handleAuthError = (err) => {
-    if (err.response?.status === 401 || err.response?.status === 403) {
-      localStorage.removeItem("adminToken");
-      window.location.href = "/admin-login";
-      return true;
-    }
+function Trend({ orders, dark }) {
+  const data = useMemo(() => Array.from({ length: 6 }, (_, index) => {
+    const month = new Date(); month.setMonth(month.getMonth() - 5 + index);
+    return { label: month.toLocaleString("en-IN", { month: "short" }), value: orders.filter((order) => { const date = new Date(order.createdAt); return date.getMonth() === month.getMonth() && date.getFullYear() === month.getFullYear(); }).reduce((total, order) => total + Number(order.finalPayableAmount || order.total || 0), 0) };
+  }), [orders]);
+  const max = Math.max(...data.map((item) => item.value), 1);
+  const points = data.map((item, index) => `${22 + index * 70},${105 - item.value * 78 / max}`).join(" ");
+  return <svg viewBox="0 0 400 135" className="mt-4 h-40 w-full overflow-visible" aria-label="Six month sales trend" role="img"><defs><linearGradient id="gold-area" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#d5a349" stopOpacity=".35" /><stop offset="1" stopColor="#d5a349" stopOpacity="0" /></linearGradient></defs>{[27, 53, 79, 105].map((y) => <line key={y} x1="22" x2="372" y1={y} y2={y} stroke={dark ? "#2d3744" : "#eee8df"} strokeDasharray="3 4" />)}<polygon points={`22,110 ${points} 372,110`} fill="url(#gold-area)" /><polyline points={points} fill="none" stroke="#d5a349" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" />{data.map((item, index) => { const [x, y] = points.split(" ")[index].split(","); return <g key={item.label}><circle cx={x} cy={y} r="4" fill="#fae4b0" stroke="#d5a349" strokeWidth="2" /><text x={x} y="130" textAnchor="middle" fontSize="10" fill={dark ? "#aab4c2" : "#737373"}>{item.label}</text></g>; })}</svg>;
+}
 
-    return false;
-  };
+function Dashboard({ counts, orders, products, onTab, dark }) {
+  const sales = orders.reduce((sum, order) => sum + Number(order.finalPayableAmount || order.total || 0), 0);
+  const metrics = [["Total sales", money(sales), ShoppingCart, "gold"], ["Total orders", counts.orders, Package, "mint"], ["Total products", counts.products, ShoppingBag, "rose"], ["New customers", counts.users, Users, "violet"]];
+  return <div className="admin-dashboard space-y-5"><div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end"><div><h1 className="text-2xl font-bold tracking-tight">Welcome back!</h1><p className="mt-1 text-sm admin-muted">Here’s what’s happening with your jewellery store today.</p></div><span className="admin-control rounded-lg px-3 py-2 text-xs">Live overview</span></div><div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{metrics.map(([label, value, Icon, tone]) => <article key={label} className={`admin-metric admin-metric-${tone} rounded-2xl border p-4`}><div className="flex items-center justify-between"><span className="admin-metric-icon grid h-11 w-11 place-items-center rounded-xl"><Icon size={21} /></span><span className="text-xs admin-muted">Live</span></div><p className="mt-4 text-xs font-medium admin-muted">{label}</p><p className="mt-1 text-2xl font-bold">{value}</p></article>)}</div><div className="grid gap-5 xl:grid-cols-[minmax(0,1.65fr)_minmax(280px,.85fr)]"><article className="admin-panel rounded-2xl border p-5"><div className="flex items-center justify-between"><div><h2 className="font-bold">Sales overview</h2><p className="mt-1 text-xs admin-muted">Last six months, from live orders</p></div><span className="admin-control rounded-lg px-3 py-1.5 text-xs">Monthly</span></div><Trend orders={orders} dark={dark} /></article><article className="admin-panel rounded-2xl border p-5"><h2 className="font-bold">Quick actions</h2><div className="mt-4 space-y-2"><button onClick={() => onTab("addProduct")} className="admin-primary flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-sm font-semibold"><Plus size={18} /> Add new product</button>{[["products", ShoppingBag, "Manage products"], ["orders", ClipboardList, "Manage orders"], ["homeContent", Image, "Edit home content"]].map(([key, Icon, label]) => <button key={key} onClick={() => onTab(key)} className="admin-action flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-sm"><Icon size={17} />{label}</button>)}<a className="admin-action flex items-center gap-3 rounded-lg px-4 py-3 text-sm" href="/" target="_blank" rel="noreferrer"><ExternalLink size={17} />View website</a></div></article></div><div className="grid gap-5 xl:grid-cols-[minmax(0,1.65fr)_minmax(280px,.85fr)]"><article className="admin-panel overflow-hidden rounded-2xl border"><div className="admin-divider flex items-center justify-between border-b px-5 py-4"><div><h2 className="font-bold">Recent orders</h2><p className="mt-1 text-xs admin-muted">Latest customer purchases</p></div><button onClick={() => onTab("orders")} className="text-xs font-semibold text-[#bb8424]">View all</button></div><div className="overflow-x-auto"><table className="w-full min-w-[520px] text-left text-sm"><thead className="admin-table-head text-xs"><tr><th className="px-5 py-3 font-medium">Customer</th><th className="px-5 py-3 font-medium">Amount</th><th className="px-5 py-3 font-medium">Payment</th><th className="px-5 py-3 font-medium">Status</th></tr></thead><tbody>{orders.slice(0, 5).map((order) => <tr key={order._id} className="admin-divider border-t"><td className="px-5 py-3 font-medium">{order.shippingAddress?.name || order.user?.name || "Customer"}</td><td className="px-5 py-3">{money(order.finalPayableAmount || order.total)}</td><td className="px-5 py-3"><span className="admin-chip">{order.paymentStatus || "Pending"}</span></td><td className="px-5 py-3"><span className="admin-status">{order.status || "Pending"}</span></td></tr>)}{!orders.length && <tr><td colSpan="4" className="px-5 py-10 text-center admin-muted">No orders yet.</td></tr>}</tbody></table></div></article><article className="admin-panel rounded-2xl border p-5"><div className="flex items-center justify-between"><div><h2 className="font-bold">Latest products</h2><p className="mt-1 text-xs admin-muted">Recently added pieces</p></div><button onClick={() => onTab("products")} className="text-xs font-semibold text-[#bb8424]">View all</button></div><div className="mt-3 space-y-3">{products.slice(0, 4).map((product) => <div className="flex items-center gap-3" key={product._id}><img src={product.images?.[0]} alt="" className="h-10 w-10 rounded-lg bg-[#f1ece3] object-cover" /><div className="min-w-0 flex-1"><p className="truncate text-sm font-medium">{product.name}</p><p className="text-xs admin-muted">{money(product.price)}</p></div><span className="admin-status">{product.isPublished === false ? "Draft" : "Active"}</span></div>)}{!products.length && <p className="py-6 text-center text-sm admin-muted">No products yet.</p>}</div></article></div></div>;
+}
 
-  const triggerRefresh = () => {
-    setRefresh(prev => !prev);
-  };
-
-
-  const menu = [
-    { name: "Dashboard", key: "dashboard", icon: LayoutDashboard },
-    { name: "Products", key: "products", icon: ShoppingBag },
-    { name: "Add Product", key: "addProduct", icon: PlusSquare },
-    { name: "Orders", key: "orders", icon: ClipboardList },
-    { name: "Home Content", key: "homeContent", icon: Image },
-    { name: "Settings", key: "settings", icon: Settings },
-    { name: "Logout", key: "logout", icon: LogOut },
-  ];
-
-  useEffect(() => {
-    const token = localStorage.getItem("adminToken");
-
-    if (!token) {
-      window.location.href = "/admin-login";
-      return;
-    }
-
-    const fetchData = async () => {
-      try {
-        const [pRes, oRes, uRes] = await Promise.all([
-          axios.get("/api/products"),
-          axios.get("/api/orders/all", {
-            headers: { Authorization: `Bearer ${token}` }
-          }),
-          axios.get("/api/user/all", {
-            headers: { Authorization: `Bearer ${token}` }
-          })
-        ]);
-
-        setCounts({
-          products: pRes.data.length,
-          orders: oRes.data.length,
-          users: uRes.data.length
-        });
-        setUsers(uRes.data);
-
-      } catch (err) {
-        if (handleAuthError(err)) return;
-        console.log("ERROR:", err.response?.data || err.message);
-      }
-    };
-
-    fetchData();
-
-    const interval = setInterval(fetchData, 60 * 1000);
-    return () => clearInterval(interval);
-
-  }, [refresh]);
-
-  useEffect(() => {
-    const tab =
-      new URLSearchParams(location.search).get("tab");
-
-    if (tab) {
-      setActive(tab);
-    }
-  }, [location]);
-
-
-  return (
-    <div className="flex h-screen overflow-hidden">
-
-      <div
-        className={`sticky top-0 h-screen shrink-0 overflow-y-auto flex flex-col scroll-smooth bg-[#3A001F] text-white w-28 p-3 z-50`}
-      >
-
-        {/* Logo */}
-        <div className="flex justify-center mb-8">
-          {/* <div className="w-14 h-14 rounded-full border-2 border-[#FFBC73] flex items-center justify-center">
-          </div> */}
-          {/* <span className="text-2xl text-center">Admin Panel</span> */}
-          <img src="Logo2.png" alt="Logo" />
-        </div>
-
-        {/* Menu */}
-        <div className="flex-1 flex flex-col gap-6">
-          {menu.map((item) => {
-            const Icon = item.icon;
-
-            return (
-              <div
-                key={item.key}
-
-                onClick={() => {
-                  if (item.key === "logout") {
-                    setLogoutConfirmOpen(true);
-                    return;
-                  }
-
-                  setActive(item.key);
-                  setOpen(false);
-                }}
-                className={`group relative flex flex-col items-center cursor-pointer rounded-2xl p-3 transition-all duration-300 ${active === item.key
-                  ? "bg-[#A56028] text-white font-semibold shadow-lg scale-105"
-                  : "text-white hover:bg-white/10"
-                  }
-`}
-              >
-                <Icon className="" size={26} />
-
-                <span className="text-xs mt-2 text-center">
-                  {item.name}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="h-screen flex-1 overflow-y-auto p-4 md:p-10">
-
-        {/* Mobile Top Bar */}
-        <div className="md:hidden flex items-center justify-between mb-4">
-          <Menu onClick={() => setOpen(!open)} className="cursor-pointer" />
-          <h2 className="font-bold">Admin</h2>
-        </div>
-
-        {/* Content Switch */}
-        {active === "dashboard" && (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-
-              {/* Products */}
-              <div className="bg-white rounded-2xl p-5 shadow-md flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-full bg-[#FFBC73] flex items-center justify-center">
-                    <ShoppingCart size={28} className="text-[#3A001F]" />
-                  </div>
-                  <div>
-                    <p className="text-[#A56028] font-medium">
-                      Total Products
-                    </p>
-
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-3xl text-[#3A001F] font-bold">
-                        {counts.products}
-                      </h2>
-
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Orders */}
-              <div className="bg-white rounded-2xl p-5 shadow-md flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-full bg-[#FFBC73] flex items-center justify-center">
-
-                    <Package size={28} className="text-[#3A001F]" />
-
-                  </div>
-
-                  <div>
-                    <p className="text-[#A56028] font-medium">
-                      Orders
-                    </p>
-
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-3xl text-[#3A001F] font-bold">
-                        {counts.orders}
-                      </h2>
-
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Users */}
-              <div className="bg-white rounded-2xl p-5 shadow-md flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-full bg-[#FFBC73] flex items-center justify-center">
-                    <Users size={28} className="text-[#3A001F]" />
-                  </div>
-
-                  <div>
-                    <p className="text-[#A56028] font-medium">
-                      Users
-                    </p>
-
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-3xl text-[#3A001F] font-bold">
-                        {counts.users}
-                      </h2>
-
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-
-            {/* Users List */}
-            <div className="bg-white p-6 rounded-xl shadow ">
-              <h2 className="text-xl font-bold mb-4 text-[#3A001F]">Users</h2>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b text-[#A56028]">
-                      <th className="text-left p-2">Name</th>
-                      <th className="text-left p-2">Email</th>
-                      <th className="text-left p-2">Mobile</th>
-                      {/* <th className="text-left p-2">Phone</th> */}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {users.map(user => (
-                      <tr key={user._id} className="border-b text-[#3A001F]">
-                        <td className="p-2">{user.name || "N/A"}</td>
-                        <td className="p-2">{user.email || "N/A"}</td>
-                        <td className="p-2">{user.mobile || "N/A"}</td>
-                        {/* <td className="p-2">{user.phone || "N/A"}</td> */}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </>
-        )}
-
-        {active === "addProduct" && <AdminAddProduct onSuccess={triggerRefresh} />}
-        {active === "products" && <AdminProducts onUpdate={triggerRefresh} />}
-        {active === "orders" && <AdminOrders />}
-        {active === "homeContent" && <AdminHomeContent />}
-        {active === "settings" && <AdminSettings />}
-
-      </div>
-      <ConfirmDialog
-        open={logoutConfirmOpen}
-        title="Logout?"
-        message="Are you sure you want to Logout?"
-        confirmText="Yes, logout"
-        cancelText="Cancle"
-        danger
-        onConfirm={() => {
-          localStorage.removeItem("adminToken");
-          window.location.href = "/";
-        }}
-        onCancel={() => setLogoutConfirmOpen(false)}
-      />
-    </div>
-  );
-};
-
-export default Admin;
+export default function Admin() {
+  const [active, setActive] = useState("dashboard"); const [open, setOpen] = useState(false); const [collapsed, setCollapsed] = useState(false); const [dark, setDark] = useState(() => localStorage.getItem("adminTheme") === "dark"); const [counts, setCounts] = useState({ products: 0, orders: 0, users: 0 }); const [orders, setOrders] = useState([]); const [products, setProducts] = useState([]); const [logoutOpen, setLogoutOpen] = useState(false); const location = useLocation();
+  const menu = [["Dashboard", "dashboard", LayoutDashboard], ["Products", "products", ShoppingBag], ["Add Product", "addProduct", PlusSquare], ["Orders", "orders", ClipboardList], ["Home Content", "homeContent", Image], ["Admin Profile", "profile", UserRound], ["Metal & Pricing", "settings", Settings]];
+  const select = (key) => { setActive(key); setOpen(false); }; const token = localStorage.getItem("adminToken");
+  useEffect(() => { localStorage.setItem("adminTheme", dark ? "dark" : "light"); }, [dark]); useEffect(() => { const tab = new URLSearchParams(location.search).get("tab"); if (tab) setActive(tab); }, [location]);
+  useEffect(() => { if (!token) { window.location.href = "/admin-login"; return; } const load = async () => { try { const headers = { Authorization: `Bearer ${token}` }; const [productRes, orderRes, userRes] = await Promise.all([axios.get("/api/products"), axios.get("/api/orders/all", { headers }), axios.get("/api/user/all", { headers })]); const productList = Array.isArray(productRes.data) ? productRes.data : productRes.data?.products || []; const orderList = Array.isArray(orderRes.data) ? orderRes.data : []; setProducts(productList); setOrders(orderList); setCounts({ products: productList.length, orders: orderList.length, users: userRes.data?.length || 0 }); } catch (err) { if ([401, 403].includes(err.response?.status)) { localStorage.removeItem("adminToken"); window.location.href = "/admin-login"; } } }; load(); const timer = setInterval(load, 60000); return () => clearInterval(timer); }, [token]);
+  return <div className={`admin-shell ${dark ? "admin-dark" : ""}`}><aside className={`admin-sidebar fixed inset-y-0 left-0 z-50 flex flex-col border-r px-3 py-5 transition-all ${collapsed ? "w-20" : "w-64"} ${open ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}><div className={`mb-7 flex items-center ${collapsed ? "justify-center" : "justify-between"} px-2`}><img src="Logo2.png" alt="Shree Sarraf" className={`h-10 w-auto ${collapsed ? "md:hidden" : ""}`} /><span className={`grid h-10 w-10 place-items-center rounded-xl bg-[#d5a349] font-bold text-[#21180a] ${collapsed ? "hidden md:grid" : "hidden"}`}>S</span><button onClick={() => setCollapsed(!collapsed)} className="hidden admin-sidebar-muted md:block">{collapsed ? <ChevronRight /> : <ChevronLeft />}</button></div><p className={`mb-3 px-3 text-[10px] uppercase tracking-[.18em] admin-sidebar-muted ${collapsed ? "md:hidden" : ""}`}>Management</p><nav className="space-y-1">{menu.map(([name, key, Icon]) => <button key={key} onClick={() => select(key)} className={`admin-nav flex w-full items-center rounded-xl px-3 py-3 text-left text-sm ${collapsed ? "md:justify-center" : "gap-3"} ${active === key ? "admin-nav-active" : ""}`}><Icon size={19} /><span className={collapsed ? "md:hidden" : ""}>{name}</span></button>)}</nav><button onClick={() => setLogoutOpen(true)} className={`admin-nav mt-auto flex items-center rounded-xl px-3 py-3 text-sm ${collapsed ? "md:justify-center" : "gap-3"}`}><LogOut size={19} /><span className={collapsed ? "md:hidden" : ""}>Logout</span></button></aside><main className={`admin-main min-h-screen ${collapsed ? "md:pl-20" : "md:pl-64"}`}><header className="admin-topbar sticky top-0 z-30 flex h-16 items-center justify-between border-b px-4 sm:px-7"><div className="flex items-center gap-3"><button onClick={() => setOpen(true)} className="md:hidden"><Menu /></button><div className="admin-search hidden rounded-lg px-3 py-2 text-sm sm:flex">Search products, orders, customers… <kbd>Ctrl K</kbd></div></div><div className="flex items-center gap-2"><button onClick={() => setDark(!dark)} className="admin-icon-button">{dark ? <Sun size={18} /> : <Moon size={18} />}</button><button className="admin-icon-button"><Bell size={18} /></button><button onClick={() => select("profile")} className="flex items-center gap-2"><span className="grid h-8 w-8 place-items-center rounded-lg bg-[#202938] text-xs font-bold text-white">AD</span><span className="hidden text-left text-xs sm:block"><b className="block">Admin</b><span className="admin-muted">Profile</span></span><ChevronDown size={15} /></button></div></header><div className="p-4 sm:p-7">{active === "dashboard" && <Dashboard counts={counts} orders={orders} products={products} onTab={select} dark={dark} />}{active === "addProduct" && <AdminAddProduct onSuccess={() => select("products")} />}{active === "products" && <AdminProducts onUpdate={() => {}} />}{active === "orders" && <AdminOrders />}{active === "homeContent" && <AdminHomeContent />}{active === "profile" && <AdminProfile />}{active === "settings" && <AdminSettings />}</div></main><ConfirmDialog open={logoutOpen} title="Logout?" message="Are you sure you want to logout?" confirmText="Yes, logout" cancelText="Cancel" danger onConfirm={() => { localStorage.removeItem("adminToken"); window.location.href = "/"; }} onCancel={() => setLogoutOpen(false)} /></div>;
+}

@@ -169,7 +169,7 @@ const ProductVariantSelector = ({ product, selection, onChange }) => {
                 const hasImages = availableOptions.some((option) => option.image);
 
                 return (
-                    <div key={group.name} className="space-y-2">
+                    <div key={group.name} className="space-y-2 ">
                         <p className="text-sm">
                             {group.name}: <span className="text-[#A56028]">{selected?.label}</span>
                         </p>
@@ -189,8 +189,8 @@ const ProductVariantSelector = ({ product, selection, onChange }) => {
                                                     : normalizeVariantSelection(product, { ...normalizedSelection, [group.name]: option });
                                                 onChange(nextSelection);
                                             }}
-                                            className={`h-20 w-24 min-w-24 rounded-md border p-1 transition ${active
-                                                    ? "border-black ring-1 ring-black"
+                                            className={`h-24 w-24 min-w-24 rounded-md border p-[2px] transition ${active
+                                                    ? "border-black "
                                                     : "border-transparent hover:border-[#A56028]"
                                                 }`}
                                             title={option.label}

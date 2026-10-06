@@ -1,4 +1,4 @@
-const statusSteps = ["Pending", "Processing", "Shipped", "Delivered"];
+const statusSteps = ["Pending", "Placed", "Processing", "Shipped", "Out for Delivery", "Delivered"];
 
 const getStepIndex = (status = "") => {
   const index = statusSteps.indexOf(status);
@@ -21,7 +21,7 @@ const OrderTracking = ({ order, compact = false }) => {
 
   return (
     <div className={compact ? "space-y-3" : "space-y-5"}>
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
         {statusSteps.map((step, index) => {
           const isDone = index <= activeIndex;
 
@@ -45,6 +45,18 @@ const OrderTracking = ({ order, compact = false }) => {
           <p><b>Last synced:</b> {formatDate(order.shiprocket.lastTrackedAt)}</p>
         )}
       </div>
+
+      {order?.statusHistory?.length > 0 && (
+        <div className="rounded border border-[#eadfe1] bg-[#fffaf8] p-3 text-sm text-gray-700">
+          <p className="font-semibold">Manual shipment updates</p>
+          {order.statusHistory.slice(-2).reverse().map((update, index) => (
+            <p key={`${update.updatedAt}-${index}`} className="mt-1">
+              <b>{update.status}</b>{update.note ? ` — ${update.note}` : ""}
+              {update.updatedAt ? ` (${formatDate(update.updatedAt)})` : ""}
+            </p>
+          ))}
+        </div>
+      )}
 
       {!compact && events.length > 0 && (
         <div className="space-y-3">

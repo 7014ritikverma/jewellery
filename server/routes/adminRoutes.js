@@ -236,9 +236,20 @@ router.post("/update/request-otp", adminAuth, async (req, res) => {
 //     }
 // });
 
+router.get("/profile", adminAuth, async (req, res) => {
+    try {
+        const admin = await Admin.findById(req.user.id).select("name email mobile profileImage");
+        if (!admin) return res.status(404).json("Admin not found");
+        res.json(admin);
+    } catch (err) {
+        console.log(err);
+        res.status(500).json("Unable to load admin profile");
+    }
+});
+
 router.put("/update", adminAuth, async (req, res) => {
     try {
-        const { email, password, mobile, otp } = req.body;
+        const { name, email, password, mobile, profileImage, otp } = req.body;
 
         const admin = await Admin.findById(req.user.id);
 
@@ -262,8 +273,10 @@ router.put("/update", adminAuth, async (req, res) => {
 
         const updateData = {};
 
+        if (name !== undefined) updateData.name = String(name).trim();
         if (email) updateData.email = email;
         if (mobile) updateData.mobile = normalizeMobile(mobile);
+        if (profileImage !== undefined) updateData.profileImage = String(profileImage).trim();
 
         if (password) {
             updateData.password =

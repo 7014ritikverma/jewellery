@@ -79,6 +79,30 @@ cloudinary.config({
   api_secret: process.env.CLOUD_SECRET,
 });
 
+// A signed direct upload lets the browser send large reel videos straight to
+// Cloudinary, avoiding the slower browser -> server -> Cloudinary double hop.
+router.post(
+  "/signature",
+  adminAuth,
+  rateLimit({ windowMs: 15 * 60 * 1000, max: 60, keyPrefix: "upload-signature" }),
+  (req, res) => {
+    const timestamp = Math.floor(Date.now() / 1000);
+    const folder = "ecommerce/reels";
+    const signature = cloudinary.utils.api_sign_request(
+      { timestamp, folder },
+      process.env.CLOUD_SECRET
+    );
+
+    res.json({
+      cloudName: process.env.CLOUD_NAME,
+      apiKey: process.env.CLOUD_KEY,
+      timestamp,
+      folder,
+      signature,
+    });
+  }
+);
+
 router.post(
   "/reviews",
   auth,

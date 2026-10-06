@@ -178,8 +178,8 @@ const ProductDetails = () => {
     };
 
     return (
-        <div className="mt-24 flex w-full flex-col items-center px-4 py-8 sm:px-6 lg:px-14">
-            <div className="flex w-full max-w-7xl flex-col gap-8 lg:flex-row lg:gap-12">
+        <div className="mt-24 flex w-full bodoni-moda flex-col items-center px-4 py-8 sm:px-6 lg:px-14">
+            <div className="flex w-full max-w-7xl flex-col gap-8 md:flex-row md:gap-12">
                 <div className="w-full lg:w-1/2">
                     <div className="relative">
                         {mainMediaType === "video" ? (
@@ -206,8 +206,8 @@ const ProductDetails = () => {
                             <img
                                 src={mainImage}
                                 alt={product.name}
-                                className="h-[320px] w-full rounded-2xl object-cover shadow-lg sm:h-[450px] lg:h-[500px]"
-                            /> 
+                                className="h-[320px] w-full rounded-2xl object-cover shadow-lg sm:h-[600px] lg:h-[600px]"
+                            />
                         )}
 
                         <button
@@ -254,9 +254,9 @@ const ProductDetails = () => {
                                         setMainImage(img);
                                         setMainMediaType("image");
                                     }}
-                                    className={`h-20 w-20 min-w-20 overflow-hidden rounded-xl border transition hover:scale-105 ${mainImage === img && mainMediaType === "image"
-                                            ? "border-[#3A001F] ring-2 ring-[#3A001F]/20"
-                                            : "border-[#ead5dc]"
+                                    className={`h-24 w-24 min-w-20 overflow-hidden rounded-xl border transition hover:scale-105 ${mainImage === img && mainMediaType === "image"
+                                        ? "border-[#3A001F] ring-2 ring-[#3A001F]/20"
+                                        : "border-[#ead5dc]"
                                         }`}
                                 >
                                     <img
@@ -274,7 +274,7 @@ const ProductDetails = () => {
                                         setMainImage(videoEmbedUrl);
                                         setMainMediaType("video");
                                     }}
-                                    className="relative h-20 w-20 min-w-20 overflow-hidden rounded-xl border bg-[#3A001F] text-white transition hover:scale-105"
+                                    className="relative h-24 w-24 min-w-20 overflow-hidden rounded-xl border bg-[#3A001F] text-white transition hover:scale-105"
                                     title="Play product video"
                                 >
                                     <span className="absolute inset-0 bg-[#3A001F]/60" />

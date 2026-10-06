@@ -10,6 +10,7 @@ import ProductVariantSelector, {
 } from "./ProductVariantSelector";
 import { formatPrice } from "../utils/formatPrice";
 import AuthRequiredModal from "./AuthRequiredModal";
+import { FiShoppingBag } from "react-icons/fi";
 
 const BuySection = ({ product, addToCart, onVariantImageSelect }) => {
     const navigate = useNavigate();
@@ -172,8 +173,8 @@ const BuySection = ({ product, addToCart, onVariantImageSelect }) => {
     const displayWeight = selectedWeight > 0 ? selectedWeight : materialWeight;
 
     return (
-        <div className="w-full parkinsans mt-3">
-            <h2 className="text-2xl text-[#3A001F] mb-2 ">{product.name}</h2>
+        <div className="w-full bodoni-moda mt-3 ">
+            <h2 className="text-xl tracking-wide text-[#3A001F] mb-2 ">{product.name}</h2>
 
             <p className="text-sm text-[#A56028] mb-2 uppercase">{madeWithText}</p>
 
@@ -218,24 +219,25 @@ const BuySection = ({ product, addToCart, onVariantImageSelect }) => {
                 <button
                     onClick={() => addToCart(buildProductWithVariants())}
                     disabled={selectedQuantity <= 0}
-                    className={`flex min-h-12 items-center justify-center gap-2 rounded-md px-5 py-3 text-sm font-bold transition ${selectedQuantity > 0
-                            ? "bg-[#A56028] text-white shadow-sm hover:bg-[#8f4f1e]"
+                    className={`flex min-h-12 items-center justify-center gap-2 rounded-xl px-5 py-2 text-base font-semibold transition ${selectedQuantity > 0
+                            ? "border border-[#3A001F] text-black hover:text-white shadow-sm hover:bg-[#8f4f1e]/90"
                             : "bg-gray-400 text-gray-200 cursor-not-allowed"
                         }`}
                 >
-                    <PackageCheck size={18} />
+                    {/* <PackageCheck size={18} /> */}
+                    {/* <FiShoppingBag size={22}/> */}
                     Add To Cart
                 </button>
 
                 <button
                     onClick={handleBuyNow}
                     disabled={selectedQuantity <= 0}
-                    className={`flex min-h-12 items-center justify-center gap-2 rounded-md px-5 py-3 text-sm font-bold transition ${selectedQuantity > 0
-                            ? "bg-[#3A001F] text-white shadow-sm hover:bg-[#581b3c]"
+                    className={`flex min-h-12 items-center justify-center gap-2 rounded-xl px-5 py-2 text-base font-semibold transition ${selectedQuantity > 0
+                            ? "bg-[#3A001F] text-white shadow-sm hover:bg-[#3A001F]/95"
                             : "bg-gray-400 text-gray-200 cursor-not-allowed"
                         }`}
                 >
-                    <CreditCard size={18} />
+                    {/* <CreditCard size={18} /> */}
                     Buy it now
                 </button>
             </div>
@@ -323,7 +325,7 @@ const BuySection = ({ product, addToCart, onVariantImageSelect }) => {
             <div className="mt-6 border-t text-[#3A001F]">
                 <div className="border-b py-3">
                     <details>
-                        <summary className="cursor-pointer uppercase font-semibold tracking-wide">
+                        <summary className="cursor-pointer parkinsans uppercase font-semibold tracking-wide">
                             Product Description
                         </summary>
 
@@ -341,7 +343,7 @@ const BuySection = ({ product, addToCart, onVariantImageSelect }) => {
 
                 <div className="border-b py-3">
                     <details>
-                        <summary className="cursor-pointer tracking-wide uppercase font-semibold ">
+                        <summary className="cursor-pointer parkinsans tracking-wide uppercase font-semibold ">
                             Shipping & Returns
                         </summary>
 
@@ -356,7 +358,7 @@ const BuySection = ({ product, addToCart, onVariantImageSelect }) => {
 
                 <div className="border-b py-3">
                     <details>
-                        <summary className="cursor-pointer tracking-wide uppercase font-semibold">Store Address</summary>
+                        <summary className="cursor-pointer parkinsans tracking-wide uppercase font-semibold">Store Address</summary>
                         <p className="text-sm mt-2 text-[#A56028]">
                             5th Floor, Marwadi Catalysts Building, CYB-5 RIICO Cyber Park, Phase II, Jodhpur, Rajasthan 342005.
                         </p>

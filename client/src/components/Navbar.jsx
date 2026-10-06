@@ -1,15 +1,10 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
-  FiAward,
   FiChevronDown,
   FiHeart,
-  FiHelpCircle,
-  FiMapPin,
   FiMenu,
   FiSearch,
-  FiShield,
   FiShoppingBag,
-  FiTruck,
   FiUser,
   FiX,
 } from "react-icons/fi";
@@ -38,11 +33,9 @@ const Navbar = () => {
   const [searchText, setSearchText] = useState("");
   const [products, setProducts] = useState([]);
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
-  const [showSecondaryNav, setShowSecondaryNav] = useState(true);
 
   const userDropdownRef = useRef();
   const searchDropdownRef = useRef();
-  const lastScrollYRef = useRef(0);
 
   const categories = Array.from(
     new Set(products.map((product) => product.category).filter(Boolean))
@@ -93,24 +86,6 @@ const Navbar = () => {
   }, []);
 
   useEffect(() => {
-    const handleScroll = () => {
-      const currentY = Math.max(window.scrollY, 0);
-      const previousY = lastScrollYRef.current;
-
-      if (currentY < 20 || currentY < previousY - 6) {
-        setShowSecondaryNav(true);
-      } else if (currentY > previousY + 6) {
-        setShowSecondaryNav(false);
-      }
-
-      lastScrollYRef.current = currentY;
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  useEffect(() => {
     const handleClickOutside = (event) => {
       if (userDropdownRef.current && !userDropdownRef.current.contains(event.target)) {
         setOpen(false);
@@ -132,7 +107,7 @@ const Navbar = () => {
         <input
           type="text"
           placeholder="Search for products, collections..."
-          className="w-full bg-transparent parkinsans text-sm outline-none placeholder:text-[#3A001F]"
+          className="w-full bg-transparent text-sm outline-none placeholder:text-[#3A001F] placeholder:parkinsans"
           value={searchText}
           onFocus={() => setSearchOpen(true)}
           onClick={() => setSearchOpen(true)}
@@ -199,89 +174,76 @@ const Navbar = () => {
   );
 
   return (
-    <header className="fixed left-0 top-0 z-50 w-full bg-white parkinsans shadow-[0_6px_24px_rgba(92,11,42,0.08)]">
-      {/* <div className="bg-[#5c0b2a] text-white">
-        <div className="mx-auto flex h-9 max-w-[1480px] items-center justify-between gap-4 px-4 text-[11px] font-medium sm:px-8">
-          <div className="hidden items-center gap-8 lg:flex">
-            <span className="inline-flex items-center gap-2">
-              <FiTruck /> Free Shipping on Orders Above Rs1999
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <FiAward /> BIS Hallmarked Jewellery
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <FiShield /> 100% Secure Payment
-            </span>
-          </div>
-          <span className="lg:hidden">BIS Hallmarked Jewellery</span>
-          <div className="flex items-center gap-5">
-            <Link to="/orders" className="hidden hover:text-[#ffd7df] sm:inline">
-              Track Order
-            </Link>
-            <Link to="/contact" className="hidden items-center gap-1 hover:text-[#ffd7df] sm:inline-flex">
-              <FiMapPin /> Store Locator
-            </Link>
-            <Link to="/faq" className="inline-flex items-center gap-1 hover:text-[#ffd7df]">
-              <FiHelpCircle /> Help
-            </Link>
-          </div>
-        </div>
-      </div> */}
+    <header className="fixed left-0 bodoni-moda top-0 z-50 w-full border-b border-stone-200 bg-[#3A001F] text-white shadow-sm">
+      <Link to="/shop" className="flex h-6 items-center justify-center border-b border-stone-200 bg-[#faf8f5] px-4 text-[9px] font-medium tracking-[0.04em] text-[#423a36] sm:text-[10px]">
+        Free express shipping with orders over ₹1500&nbsp; <span className="ml-1 font-bold underline underline-offset-2">SHOP NOW</span>
+      </Link>
 
-      <div className="mx-auto grid h-[76px] max-w-[1480px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 px-4 sm:px-8">
+      <div className="mx-auto grid h-[64px] max-w-[1480px] grid-cols-[auto_1fr_auto] items-center gap-4 px-4 sm:px-8 lg:h-[66px]">
         <div className="flex items-center sm:gap-4 gap-8">
           <button
             type="button"
             onClick={() => setMobileMenu((current) => !current)}
-            className="flex h-10 w-10 items-center justify-center rounded-md border border-[#3A001F] text-[#3A001F] lg:hidden"
+            className="flex h-9 w-9 items-center justify-center text-[#292321] lg:hidden"
             aria-label="Toggle menu"
           >
             {mobileMenu ? <FiX size={22} /> : <FiMenu size={22} />}
           </button>
 
-          <Link to="/" className="shrink-0">
-            <img src="Logo.png" alt="Khushbu Jewellers" className="h-8 sm:h-12 w-auto object-contain" />
+          <Link to="/" className="shrink-0" aria-label="Khushbu Jewellers home">
+            <img src="Logo2.png" alt="Khushbu Jewellers" className="h-8 w-auto object-contain sm:h-10" />
           </Link>
         </div>
 
-        <div className="hidden min-w-0 justify-center lg:flex">
-          <div className="flex w-full max-w-[640px] items-center gap-4">
-            <div className="group relative shrink-0">
-              <button
-                type="button"
-                className="flex h-12 items-center gap-3 rounded-md bg-[#3A001F] px-5 text-sm tracking-wide text-white transition hover:bg-[#3A001F]/90"
-              >
-                <FiMenu />
-                Categories
-                <FiChevronDown className="transition group-hover:rotate-180" />
-              </button>
-              <div className="absolute left-0 top-full hidden w-50 rounded-lg border-2 border-[#581b3c] bg-[#3A001F] p-3 text-sm tracking-wide font-normal text-white/80   shadow-2xl group-hover:block">
-                {categoryOptions.map((item) => (
-                  <Link
-                    key={item}
-                    to={`/shop?category=${item}`}
-                    className="block rounded-md px-3 py-2 hover:text-white hover:underline hover:bg-[#A56028]"
-                  >
-                    {item}
-                  </Link>
-                ))}
-              </div>
+        <nav className="hidden items-center justify-center gap-7 text-sm font-medium lg:flex xl:gap-9">
+          <Link to="/" className={`border-b pb-1 transition hover:border-[#FFBC73] ${location.pathname === "/" ? "border-[#A56028]" : "border-transparent"}`}>Home</Link>
+          <div className="group relative py-6">
+            <span className="inline-flex cursor-pointer items-center gap-1 transition hover:text-[#a56028]">Categories <FiChevronDown size={13} /></span>
+            <div className="absolute left-1/2 top-[58px] hidden w-48 -translate-x-1/2 border border-stone-200 text-[#3A001F] rounded-2xl bg-white p-2 shadow-lg group-hover:block">
+              {categoryOptions.map((item) => (
+                <Link key={item} to={`/shop?category=${item}`} className="block px-3 py-2 text-sm transition hover:bg-stone-100 rounded-md hover:text-[#a56028]">
+                  {item}
+                </Link>
+              ))}
             </div>
-
-            <div className="min-w-0 flex-1">{searchBox()}</div>
           </div>
-        </div>
+          <Link to="/shop?type=new" className="transition hover:text-[#a56028]">New Arrival</Link>
+          <Link to="/shop?type=bestseller" className="transition hover:text-[#a56028]">Bestsellers</Link>
+          <div className="group relative py-6">
+            <span className="inline-flex cursor-pointer items-center gap-1 transition hover:text-[#a56028]">Info <FiChevronDown size={13} /></span>
+            <div className="absolute left-1/2 top-[58px] hidden w-48 -translate-x-1/2 border border-stone-200 bg-white text-[#3A001F] rounded-2xl p-2 shadow-lg group-hover:block">
+              {infoLinks.map(([label, path]) => (
+                <Link key={label} to={path} className="block px-3 py-2 text-sm transition hover:bg-stone-100 rounded-md hover:text-[#a56028]">
+                  {label}
+                </Link>
+              ))}
+            </div>
+          </div>
+          <div className="group relative py-6">
+            <span className="inline-flex cursor-pointer items-center gap-1 transition hover:text-[#a56028]">Our Policy <FiChevronDown size={13} /></span>
+            <div className="absolute left-1/2 top-[58px] hidden w-52 -translate-x-1/2 border border-stone-200 bg-white text-[#3A001F] rounded-2xl p-2 shadow-lg group-hover:block">
+              {policyLinks.map(([label, path]) => (
+                <Link key={label} to={path} className="block px-3 py-2 text-sm transition hover:bg-stone-100 rounded-md hover:text-[#a56028]">
+                  {label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </nav>
 
-        <div className="ml-auto flex shrink-0 items-center gap-3 text-[#3A001F] sm:gap-5">
+        <div className="ml-auto flex shrink-0 items-center gap-3 text-white sm:gap-4">
+          <div className="relative hidden sm:block" ref={searchDropdownRef}>
+            <button type="button" onClick={() => setSearchOpen((current) => !current)} className="p-1 transition hover:text-[#FFBC73]" aria-label="Search products"><FiSearch size={18} /></button>
+            {searchOpen && <div className="absolute right-0 top-9 w-[360px]">{searchBox()}</div>}
+          </div>
           <Link
             to="/wishlist"
             state={{ backgroundLocation: location }}
-            className="relative flex flex-col items-center gap-1 text-[11px] font-semibold"
+            className="relative hidden p-1 transition hover:text-[#FFBC73] md:flex"
           >
             <FiHeart size={22} />
-            <span className="hidden sm:block">Wishlist</span>
             {wishlist.length > 0 && (
-              <span className="absolute right-1 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] text-white">
+              <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#a56028] px-1 text-[10px] text-white">
                 {wishlist.length}
               </span>
             )}
@@ -291,16 +253,15 @@ const Navbar = () => {
             <button
               type="button"
               onClick={() => setOpen((current) => !current)}
-              className="flex flex-col items-center gap-1 text-[11px] font-semibold"
+              className="flex p-1 transition hover:text-[#FFBC73]"
             >
               <FiUser size={22} />
-              <span className="hidden sm:block">Account</span>
             </button>
 
             {open && (
-              <div className="absolute right-0 mt-4 w-44 rounded-lg border-2 border-[#581b3c] bg-[#3A001F] p-3 text-sm font-normal text-white/80 shadow-2xl">
+              <div className="absolute right-0 mt-4 w-44 border border-stone-200 bg-white p-2 text-sm text-[#292321] shadow-xl">
                 {!userToken ? (
-                  <Link to="/login" className="block rounded-md px-3 py-2 hover:bg-[#A56028]">
+                  <Link to="/login" className="block px-3 py-2 hover:bg-stone-50 hover:text-[#a56028]">
                     Login / Signup
                   </Link>
                 ) : (
@@ -311,7 +272,7 @@ const Navbar = () => {
                         navigate("/dashboard");
                         setOpen(false);
                       }}
-                      className="block w-full rounded-md px-3 py-2 text-left hover:text-white hover:bg-[#A56028]"
+                      className="block w-full px-3 py-2 text-left hover:bg-stone-50 hover:text-[#a56028]"
                     >
                       Profile
                     </button>
@@ -321,14 +282,14 @@ const Navbar = () => {
                         navigate("/orders");
                         setOpen(false);
                       }}
-                      className="block w-full rounded-md px-3 py-2 text-left hover:text-white hover:bg-[#A56028]"
+                      className="block w-full px-3 py-2 text-left hover:bg-stone-50 hover:text-[#a56028]"
                     >
                       Orders
                     </button>
                     <button
                       type="button"
                       onClick={() => setLogoutConfirmOpen(true)}
-                      className="block w-full rounded-md px-3 py-2 text-left hover:font-semibold text-red-600 hover:bg-white"
+                      className="block w-full px-3 py-2 text-left text-red-600 hover:bg-stone-50"
                     >
                       Logout
                     </button>
@@ -341,92 +302,17 @@ const Navbar = () => {
           <Link
             to="/cart"
             state={{ backgroundLocation: location }}
-            className="relative flex flex-col items-center gap-1 text-[11px] font-semibold"
+            className="relative flex p-1 transition hover:text-[#FFBC73]"
           >
             <FiShoppingBag size={22} />
-            <span className="hidden sm:block">Cart</span>
             {cart.length > 0 && (
-              <span className="absolute -right-1 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] text-white">
+              <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#a56028] px-1 text-[10px] text-white">
                 {cart.length}
               </span>
             )}
           </Link>
         </div>
       </div>
-
-      <nav
-        className={`hidden overflow-hidden border-t border-[#f3dfe3] bg-[#A56028] transition-[max-height,opacity] duration-300 lg:block ${
-          showSecondaryNav ? "max-h-10 opacity-100" : "max-h-0 border-transparent opacity-0"
-        }`}
-      >
-        <div className="mx-auto flex h-10 max-w-[1480px] items-center justify-center gap-7 px-8 text-[14px] text-white">
-          <Link to="/" className="transition hover:underline hover:text-[#FFBC73]">
-            Home
-          </Link>
-
-          {/* <div className="group relative flex h-full items-center">
-            <span className="inline-flex cursor-pointer items-center gap-1 transition hover:text-[#c18056]">
-              Shop By Category
-              <FiChevronDown className="text-sm transition group-hover:rotate-180" />
-            </span>
-            <div className="absolute left-0 top-full hidden w-52 rounded-lg border border-[#efd6da] bg-white p-3 text-sm font-semibold text-[#5c0b2a] shadow-2xl group-hover:block">
-              {categoryOptions.map((item) => (
-                <Link
-                  key={item}
-                  to={`/shop?category=${item}`}
-                  className="block rounded-md px-3 py-2 hover:bg-[#fdecef]"
-                >
-                  {item}
-                </Link>
-              ))}
-            </div>
-          </div> */}
-
-          <Link to="/shop?type=new" className="transition hover:underline hover:text-[#FFBC73]">
-            New Arrival
-          </Link>
-
-          <Link to="/shop?type=bestseller" className="transition hover:underline hover:text-[#FFBC73]">
-            Bestsellers
-          </Link>
-
-          <div className="group relative flex h-full items-center">
-            <span className="inline-flex cursor-pointer items-center gap-1 transition hover:underline hover:text-[#FFBC73]">
-              Info
-              <FiChevronDown className="text-sm transition group-hover:rotate-180" />
-            </span>
-            <div className="absolute left-0 top-full hidden w-48 rounded-lg border-2 border-[#581b3c] bg-[#3A001F] p-3 text-sm  text-white/80 shadow-2xl group-hover:block">
-              {infoLinks.map(([label, path]) => (
-                <Link
-                  key={label}
-                  to={path}
-                  className="block rounded-md px-3 py-2 hover:text-white hover:underline hover:bg-[#A56028]"
-                >
-                  {label}
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          <div className="group relative flex h-full items-center">
-            <span className="inline-flex cursor-pointer items-center gap-1 transition hover:underline hover:text-[#FFBC73]">
-              Our Policy
-              <FiChevronDown className="text-sm transition group-hover:rotate-180" />
-            </span>
-            <div className="absolute left-0 top-full hidden w-56 rounded-lg border-2 border-[#581b3c] bg-[#3A001F] p-3 text-sm text-white/80 shadow-2xl group-hover:block">
-              {policyLinks.map(([label, path]) => (
-                <Link
-                  key={label}
-                  to={path}
-                  className="block rounded-md px-3 py-2 hover:text-white hover:underline hover:bg-[#A56028]"
-                >
-                  {label}
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      </nav>
 
       {mobileMenu && (
         <div className="border-t border-[#581b3c] bg-[#3A001F] px-4 py-4 text-white shadow-xl lg:hidden">

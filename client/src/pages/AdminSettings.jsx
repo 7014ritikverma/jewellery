@@ -250,7 +250,7 @@ const AdminSettings = () => {
     <div className="flex justify-center ">
       <div className="max-w-2xl bg-white text-[#3A001F] p-6 rounded-xl shadow space-y-6">
 
-        <div className="space-y-4">
+        {false && <div className="space-y-4">
           <h2 className="text-2xl font-bold">Admin Settings</h2>
 
           <input
@@ -319,9 +319,9 @@ const AdminSettings = () => {
             )}
           </div>
 
-        </div>
+        </div>}
 
-        <div className="border-t pt-6 space-y-4">
+        <div className="space-y-4">
           <h2 className="text-2xl font-bold">Metal Rate Manager</h2>
 
           <div className="rounded-lg border bg-[#fff8f4] p-4">

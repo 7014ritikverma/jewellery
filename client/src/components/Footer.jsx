@@ -30,7 +30,7 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="mt-8 bg-[#3A001F] text-white parkinsans">
+    <footer className="mt-8 bg-[#3A001F] text-white bodoni-moda">
       <div className="mx-auto grid max-w-[1320px] gap-10 px-6 py-12 sm:px-8 lg:grid-cols-[1.2fr_0.8fr_0.8fr_1.25fr_1fr]">
         <div>
           <Link to="/" className="inline-block">

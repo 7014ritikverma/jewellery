@@ -39,7 +39,7 @@ const Cart = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-[70] mt-0 bg-black/45">
+    <div className="fixed inset-0 z-[70] bodoni-moda mt-0 bg-black/45">
       <button
         type="button"
         aria-label="Close cart"
